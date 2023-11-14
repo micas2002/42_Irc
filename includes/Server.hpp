@@ -16,15 +16,29 @@
 #include <sys/wait.h>
 #include <signal.h>
 
+#include <map>
+
+#include "User.hpp"
+
 class Server
 {
-	private:
-
 	public:
+		// Constructors
 		Server();
-		Server(const Server& copy);
+		Server( const Server& copy );
+
+		// Destructor
 		~Server();
 
-		Server&	operator = (const Server& assign);
+		// Operators
+		Server&	operator = ( const Server& assign );
+
+		//Gettters
+		User	getUser(const std::string& username);
+
+		void	addUser( std::string& nickname, std::string& username, int socketFd );
+
+	private:
+		std::map<std::string, User>	_users;
 
 };

@@ -5,6 +5,8 @@
 #include <netdb.h>
 #include <unistd.h>
 
+#include <Server.hpp>
+
 int main(int argc, char *argv[]) {
 	int sockfd;
 	struct addrinfo hints, *servinfo, *p;

@@ -1,8 +1,6 @@
 #include "User.hpp"
 
-User::User()  : _nickname( "default nickname" ), _username( "default username" ), _socketFd( 0 ) {}
-
-User::User( const std::string& nickname, const std::string& username, const int socketFd ) : _nickname( nickname ), _username( username ), _socketFd( socketFd ) {}
+User::User() {}
 
 User::User( const User& copy)
 {
@@ -13,8 +11,12 @@ User::~User() {}
 
 User&	User::operator=( const User& assign )
 {
-	( void )assign;
-
+	if (this != &assign)
+	{
+		this->_nickname = assign._nickname;
+		this->_username = assign._username;
+		this->_socketFd = assign._socketFd;
+	}
 	return ( *this );
 }
 
@@ -23,6 +25,13 @@ const std::string&	User::getNickname() const { return ( _nickname ); }
 const std::string&	User::getUsername() const { return ( _username ); }
 
 int	User::getSocketFd() const { return ( _socketFd ); }
+
+bool	User::checkUserInfo()
+{
+	if ( _nickname.empty() || _username.empty() )
+		return ( false );
+	return ( true );
+}
 
 void	User::setNickname( const std::string& nickname ) { _nickname = nickname; }
 

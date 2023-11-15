@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <algorithm>
 
 #include <map>
 
@@ -34,11 +35,17 @@ class Server
 		Server&	operator = ( const Server& assign );
 
 		//Gettters
-		User	getUser(const std::string& username);
+		User				getUser(const std::string& username);
+		const std::string&	getServerPassword() const;
 
-		void	addUser( std::string& nickname, std::string& username, int socketFd );
+		//Setters
+		void	setServerPassword( const std::string& password );
+
+		// void	addUser( std::string& nickname, std::string& username, int socketFd );
+		bool	authenticateUser( int new_fd );
 
 	private:
 		std::map<std::string, User>	_users;
+		std::string					_serverPassword;
 
 };

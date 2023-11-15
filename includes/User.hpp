@@ -7,7 +7,6 @@ class User
 	public:
 		// Constructors
 		User();
-		User( const std::string& nickname, const std::string& username, const int socketFd );
 		User( const User& copy );
 
 		// Destructor
@@ -25,6 +24,8 @@ class User
 		void	setNickname( const std::string& nickname );
 		void	setUsername( const std::string& username );
 		void	setSocketFd( const int socketFd );
+
+		bool	checkUserInfo();
 	
 	private:
 		std::string	_nickname;

@@ -43,6 +43,14 @@ class Server
 
 		// void	addUser( std::string& nickname, std::string& username, int socketFd );
 		bool	authenticateUser( int new_fd );
+		bool	checkAuthenticationCommands( std::string& input, int new_fd, User user);
+		bool	checkIfPasswordsMatch( const std::string& input ) const;
+
+		// Sockets
+		void	createAndBindSocket();
+		void	serverLoop();
+		void	handleNewConnection();
+		void	handleClientData();
 
 	private:
 		std::map<std::string, User>	_users;

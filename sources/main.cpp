@@ -1,5 +1,21 @@
 #include "Server.hpp"
 
+// int	main( int argc, char** argv ) {
+// 	try {
+// 		if ( argc != 3 )
+// 			throw std::runtime_error( "usage: ./irc <port> <password>" );
+
+// 		Server	server;
+// 		server.setServerPassword( argv[2] );
+
+
+
+// 	} catch ( std::exception &e ) {
+// 		e.what();
+// 	}
+// }
+
+
 int	main( int argc, char **argv )
 {
 	try
@@ -74,7 +90,7 @@ int	main( int argc, char **argv )
 		Server server;
 
 		server.setServerPassword(argv[2]);
-
+		
 		while( 1 )
 		{
 			read_fds = master; // copy read_fds into master

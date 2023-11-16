@@ -25,7 +25,7 @@ class User
 		void	setUsername( const std::string& username );
 		void	setSocketFd( const int socketFd );
 
-		bool	checkUserInfo();
+		bool	userFieldsEmpty();
 	
 	private:
 		std::string	_nickname;

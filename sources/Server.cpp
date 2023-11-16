@@ -34,8 +34,8 @@ bool	Server::authenticateUser( int new_fd ) {
     int			numbytes;
 
     user.setSocketFd( new_fd );
-	numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
-    while ( numbytes > 0 && user.userFieldsEmpty() == true ) {
+	// numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
+    while ( ( numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 ) ) > 0 || user.userFieldsEmpty() == true) {
         buffer[numbytes] = '\0';
         char *token = strtok( buffer, "\n" );
 
@@ -48,35 +48,36 @@ bool	Server::authenticateUser( int new_fd ) {
 				return ( false );
 
             // Get the next token
+			free( token );
             token = strtok( NULL, "\n" );
         }
-		numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
+		// numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
     }
 	return ( true );
 }
 
 bool	Server::checkAuthenticationCommands( std::string& input, int new_fd, User user ) {
 	if ( input.find( "/PASS" ) != std::string::npos ) {
-				input.erase( std::remove(input.begin(), input.end(), '\''), input.end() );
+		input.erase( std::remove(input.begin(), input.end(), '\''), input.end() );
 
-				if ( checkIfPasswordsMatch( input ) == false )
-				{
-					std::cout << "Incorrect password! Desconecting from server..." << std::endl;
-					close( new_fd );
-					return ( false );
-				}
-				std::cout << "Correct password!" << std::endl;
-            }
+		if ( checkIfPasswordsMatch( input ) == false )
+		{
+			std::cout << "Incorrect password! Desconecting from server..." << std::endl;
+			close( new_fd );
+			return ( false );
+		}
+		std::cout << "Correct password!" << std::endl;
+	}
 	else if ( input.find( "/NICK" ) != std::string::npos ) {
-		user.setNickname( input.substr(strlen( "NICK" ) ) );
+		user.setNickname( input.substr(strlen( "/NICK " ), input.length() - strlen("/NICK ") ) );
 		std::cout << "Nickname added" << std::endl;
 	}
 	else if ( input.find( "/USER" ) != std::string::npos ) {
-		user.setUsername( input.substr( strlen( "USER" ) ) );
+		user.setUsername( input.substr( strlen( "/USER " ), input.length() - strlen("/USER ") ) );
 		std::cout << "Username added" << std::endl;
 	}
 	else
-		std::cout << "Invalid command. Please use /PASS, /NICK and /USER" << std::endl;
+		std::cout << "Invalid command. Please use /PASS, /NICK and /USER commands" << std::endl;
 	return ( true );
 }
 
@@ -198,7 +199,7 @@ void	Server::handleNewConnection() {
 	// }
 }
 
-// void	Server::handleClientData() {
+void	Server::handleClientData() {
 // // 	// handle data from a client
 // // 	if ((nbytes = recv(i, buf, sizeof buf, 0)) <= 0) {// got error or connection closed by client
 // // 		if (nbytes == 0) // connection closed
@@ -214,4 +215,4 @@ void	Server::handleNewConnection() {
 // // 				perror("send");
 // // 		}
 // // 	}
-// }
+}

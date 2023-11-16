@@ -56,4 +56,7 @@ class Server
 		std::map<std::string, User>	_users;
 		std::string					_serverPassword;
 
+		fd_set						_master;
+		fd_set						_read_fds;
+					
 };

@@ -1,7 +1,64 @@
 #pragma once
 
 #include <iostream>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <cstdio>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <algorithm>
+#include <map>
+
+#include "./User.hpp"
 
 class Channel {
+	public:
+		// Constructors
+		Channel();
+		Channel(std::string name);
+		Channel( const Channel& copy );
 
-}
+		// Destructor
+		~Channel();
+
+		// Operators
+		Channel&	operator = ( const Channel& assign );
+
+		//Gettters
+		
+
+		//Setters
+		void	setPassword(std::string password);
+		void	setTopic(std::string topic);
+		void	setUserLimit(int userLimit);
+		void	addUser(User* newUser);
+		void	addOperator(User* newOperator);
+		void	addInvite(User* newInvite);
+
+		//Removers
+		void	ejectUser(User* user);
+		void	ejectOperator(User* operator);
+		void	removeInvite(User* invite);
+
+	private:
+		const std::string						_name;
+		std::string								_channelPassword;
+		std::string								_topic;
+		int										_userLimit;
+		bool									_inviteOnly;
+		bool									_topicRestriction;
+
+		std::map<std::string, User*>			_users;
+		std::map<std::string, User*>			_operators;
+		std::map<std::string, User*>			_inviteList;
+		
+};

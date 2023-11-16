@@ -18,7 +18,11 @@ User	Server::getUser( const std::string& username ) { return ( _users[username] 
 
 const std::string&	Server::getServerPassword() const { return ( _serverPassword ); }
 
+const std::string&	Server::getServerPort() const { return ( _serverPort ); }
+
 void	Server::setServerPassword( const std::string& password) { _serverPassword = password; }
+
+void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
 
 // void	Server::addUser( std::string& nickname, std::string& username, int socketFd )
 // {
@@ -48,7 +52,6 @@ bool	Server::authenticateUser( int new_fd ) {
 				return ( false );
 
             // Get the next token
-			free( token );
             token = strtok( NULL, "\n" );
         }
 		// numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
@@ -88,131 +91,123 @@ bool	Server::checkIfPasswordsMatch(const std::string& input ) const {
 }
 
 void	Server::createAndBindSocket() {
-	// int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
-	// 	struct addrinfo hints, *servinfo, *p;
-	// 	int rv; // for getaddrinfo error handling 
-	// 	int yes = 1; // used to tell setsockopt(  ) that the flag SO_REUSEADDR should be enabled
-	// 	struct sockaddr_in6 their_addr; // variable to hold any IPV4 or IPV6 address
-	// 	char ip6[INET6_ADDRSTRLEN]; // variable to hold the IP in readable form
-	// 	socklen_t sin_size;
-	// 	fd_set master;    // master file descriptor list
-	// 	fd_set read_fds;  // temp file descriptor list for select()
-	// 	int fdmax; //keep track of max fd in master
+	FD_ZERO(&_master);    // clear the master and temp sets
+	FD_ZERO(&_read_fds);
 
-	// 	char buf[256];    // buffer for client data
-	// 	int nbytes;
+	memset( &_hints, 0, sizeof( _hints ) );
+	_hints.ai_family = AF_INET6;
+	_hints.ai_socktype = SOCK_STREAM;
+	_hints.ai_flags = AI_PASSIVE; // use my IP
 
-	// 	FD_ZERO(&master);    // clear the master and temp sets
-	// 	FD_ZERO(&read_fds);
+	int	addrInfoReturn;
+	struct addrinfo* serverInfo;
+	if ( ( addrInfoReturn = getaddrinfo( NULL, _serverPort.c_str(), &_hints, &serverInfo ) ) != 0 )
+		throw std::runtime_error( gai_strerror( addrInfoReturn ) );
 
-	// 	memset( &hints, 0, sizeof hints );
-	// 	hints.ai_family = AF_INET6;
-	// 	hints.ai_socktype = SOCK_STREAM;
-	// 	hints.ai_flags = AI_PASSIVE; // use my IP
+	// loop through all the results and bind to the first we can
+	int yes = 1; // used to tell setsockopt(  ) that the flag SO_REUSEADDR should be enabled
+	struct addrinfo*	addrPointer;
+	for( addrPointer = serverInfo; addrPointer != NULL; addrPointer = addrPointer->ai_next ) {
+		if ( ( _serverSocket = socket( addrPointer->ai_family, addrPointer->ai_socktype, addrPointer->ai_protocol ) ) == -1 ) {
+			std::perror( "server: socket" );
+			continue;
+		}
 
-	// 	if ( ( rv = getaddrinfo( NULL, argv[1], &hints, &servinfo ) ) != 0 )
-	// 		throw std::runtime_error( gai_strerror( rv ) );
-	
-	// 	// loop through all the results and bind to the first we can
-	// 	for( p = servinfo; p != NULL; p = p->ai_next )
-	// 	{
-	// 		if ( ( sockfd = socket( p->ai_family, p->ai_socktype, p->ai_protocol ) ) == -1 )
-	// 		{
-	// 			std::perror( "server: socket" );
-	// 			continue;
-	// 		}
+		if ( setsockopt( _serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof( int ) ) == -1 ) {
+			std::perror( "setsockopt" );
+			exit( 1 );
+		}
 
-	// 		if ( setsockopt( sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof( int ) ) == -1 ) 
-	// 		{
-	// 			std::perror( "setsockopt" );
-	// 			exit( 1 );
-	// 		}
+		if ( bind( _serverSocket, addrPointer->ai_addr, addrPointer->ai_addrlen ) == -1 ) {
+			close( _serverSocket );
+			std::perror( "server: bind" );
+			continue;
+		}
+		break;
+	}
+	freeaddrinfo( serverInfo );
 
-	// 		if ( bind( sockfd, p->ai_addr, p->ai_addrlen ) == -1 ) 
-	// 		{
-	// 			close( sockfd );
-	// 			std::perror( "server: bind" );
-	// 			continue;
-	// 		}
-	// 		break;
-	// 	}
+	if ( addrPointer == NULL )
+		throw std::runtime_error( "server: failed to bind" );
 
-	// 	freeaddrinfo( servinfo );
-
-	// 	if ( p == NULL )
-	// 		throw std::runtime_error( "server: failed to bind" );
-
-	// 	if ( listen( sockfd, 0 ) == -1 )
-	// 		throw std::runtime_error( "failed to listen" );
-	
+	if ( listen( _serverSocket, 0 ) == -1 )
+		throw std::runtime_error( "failed to listen" );
 			
-	// 	FD_SET(sockfd, &master);
-	// 	// keep track of the biggest file descriptor
-	// 	fdmax = sockfd; // so far, it's this one
-
-	// 	std::cout << "server: awaiting connections" << std::endl;
+	FD_SET( _serverSocket, &_master );
+	// keep track of the biggest file descriptor
+	_maxSocketFd = _serverSocket; // so far, it's this one
+		std::cout << "server: awaiting connections" << std::endl;
+	serverLoop();
 }
 
 void	Server::serverLoop() {
-	// while( 1 ) {
-	// 	read_fds = master; // copy read_fds into master
-	// 	if (select(fdmax+1, &read_fds, NULL, NULL, NULL) == -1) {
-	// 		perror("select");
-	// 		exit(4);
-	// 	}
+	while( 1 ) {
+		_read_fds = _master; // copy read_fds into master
+		if ( select( _maxSocketFd + 1, &_read_fds, NULL, NULL, NULL ) == -1 ) {
+			perror("select");
+			exit(4);
+		}
 
-	// 	for(int i = 0; i <= fdmax; i++) {
-	// 		if (FD_ISSET(i, &read_fds))// we found one fd that is ready to be read
-	// 		{
-	// 			if (i == sockfd) // new user trying to connect
-	// 				handleNewConnection();
-	// 			else 
-	// 				handleClientData();
-	// 		}
-	// 	}
-	// }
+		for( int index = 3; index <= _maxSocketFd; index++ ) {
+			if ( FD_ISSET( index, &_read_fds ) )// we found one fd that is ready to be read
+			{
+				if ( index == _serverSocket ) // new user trying to connect
+					handleNewConnection();
+				else 
+					handleClientData( index );
+			}
+		}
+	}
 }
 
 void	Server::handleNewConnection() {
 	// handle new connections
-	// sin_size = sizeof( struct sockaddr_storage );
-	// new_fd = accept( sockfd, ( struct sockaddr * )&their_addr, &sin_size );
+	socklen_t			sin_size;
+	int					new_fd;
+	struct sockaddr_in6 their_addr;
+	char 				ip6[INET6_ADDRSTRLEN];
 
-	// if ( new_fd == -1 )
-	// 	perror( "accept" );
-	// else
-	// {
-	// 	std::cout << "Welcome to our IRC server. Please input username, nickname and server password" << std::endl;
-	// 	std::cout << "Use /NICK, /USER and /PASS commands" << std::endl;
+	sin_size = sizeof( struct sockaddr_storage );
+	new_fd = accept( _serverSocket, ( struct sockaddr * )&their_addr, &sin_size );
 
-	// 	if ( server.authenticateUser( new_fd ) ) // gets user information, like username, password, etc
-	// 	{
-	// 		FD_SET( new_fd, &master ); // add to master set
+	if ( new_fd == -1 )
+		perror( "accept" );
+	else
+	{
+		std::cout << "Welcome to our IRC server. Please input username, nickname and server password" << std::endl;
+		std::cout << "Use /NICK, /USER and /PASS commands" << std::endl;
 
-	// 		if (new_fd > fdmax)
-	// 			fdmax = new_fd;
+		if ( authenticateUser( new_fd ) ) // gets user information, like username, password, etc
+		{
+			FD_SET( new_fd, &_master ); // add to master set
+
+			if ( new_fd > _maxSocketFd )
+				_maxSocketFd = new_fd;
 			
-	// 		inet_ntop( AF_INET6, &( their_addr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
-	// 		std::cout << "server: got connection from " << ip6 << std::endl;
-	// 	}
+			inet_ntop( AF_INET6, &( their_addr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
+			std::cout << "server: got connection from " << ip6 << std::endl;
+		}
 
-	// }
+	}
 }
 
-void	Server::handleClientData() {
-// // 	// handle data from a client
-// // 	if ((nbytes = recv(i, buf, sizeof buf, 0)) <= 0) {// got error or connection closed by client
-// // 		if (nbytes == 0) // connection closed
-// // 			printf("selectserver: socket %d hung up\n", i);
-// // 		else
-// // 			perror("recv");
-// // 		close(i); // close the fd!
-// // 		FD_CLR(i, &master); // remove fd from master set
-// // 	}
-// // 	else {// we got some data from a client
-// // 		for(int j = 0; j <= fdmax; j++) {// send to everyone except the listener and ourselves!
-// // 			if ( FD_ISSET( j, &master ) && j != sockfd && j != i && send( j, buf, nbytes, 0 ) == -1 ) 
-// // 				perror("send");
-// // 		}
-// // 	}
+void	Server::handleClientData( int clientSocket ) {
+	char	buffer[256]; // buffer for client data
+	int		numberOfBytes;
+
+	// handle data from a client
+	if ( (numberOfBytes = recv( clientSocket, buffer, sizeof( buffer ), 0 ) ) <= 0 ) {// got error or connection closed by client
+		if ( numberOfBytes == 0 ) // connection closed
+			std::cout << "selectserver: socket " << clientSocket << " hung up" << std::endl;
+		else
+			perror("recv");
+		close( clientSocket ); // close the fd!
+		FD_CLR( clientSocket, &_master ); // remove fd from master set
+		return ;
+	}
+	// we got some data from a client
+	for( int index = 3; index <= _maxSocketFd; index++ ) {// send to everyone except the listener and ourselves!
+		if ( FD_ISSET( index, &_master ) && index != _maxSocketFd && index != clientSocket && send( index, buffer, numberOfBytes, 0 ) == -1 ) 
+			perror("send");
+	}
 }

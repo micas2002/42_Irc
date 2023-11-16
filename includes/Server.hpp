@@ -43,7 +43,7 @@ class Server
 
 		// void	addUser( std::string& nickname, std::string& username, int socketFd );
 		bool	authenticateUser( int new_fd );
-		bool	checkAuthenticationCommands( std::string& input, int new_fd, User user);
+		bool	checkAuthenticationCommands( std::string& input, int new_fd, User& user, bool& passwordMatch);
 		bool	checkIfPasswordsMatch( const std::string& input ) const;
 
 		// Sockets
@@ -56,7 +56,7 @@ class Server
 		std::map<std::string, User>	_users;
 		std::string					_serverPassword;
 
-		fd_set						_master;
-		fd_set						_read_fds;
+		// fd_set						_master;
+		// fd_set						_read_fds;
 					
 };

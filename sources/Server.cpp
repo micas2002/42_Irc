@@ -36,30 +36,33 @@ bool	Server::authenticateUser( int new_fd ) {
     char 		buffer[1024];
     std::string input;
     int			numbytes;
+	bool		passwordMatch = false;
 
     user.setSocketFd( new_fd );
-	// numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
-    while ( ( numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 ) ) > 0 || user.userFieldsEmpty() == true) {
-        buffer[numbytes] = '\0';
-        char *token = strtok( buffer, "\n" );
+	while ( user.userFieldsEmpty() == true || passwordMatch == false)
+	{
+		numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
+		if ( numbytes > 0 ) {
+			buffer[numbytes] = '\0';
+			char *token = strtok( buffer, "\n" );
 
-        while ( token != NULL ) {
-            // Process each line here
-            input = token;
+			while ( token != NULL ) {
+				// Process each line here
+				input = token;
 
-            // Check for keywords like "PASS," "NICK," "USER"
-            if (checkAuthenticationCommands( input, new_fd, user ) == false)
-				return ( false );
+				// Check for keywords like "PASS," "NICK," "USER"
+				if (checkAuthenticationCommands( input, new_fd, user, passwordMatch ) == false)
+					return ( false );
 
-            // Get the next token
-            token = strtok( NULL, "\n" );
-        }
-		// numbytes = recv( new_fd, buffer, sizeof( buffer ) - 1, 0 );
-    }
+				// Get the next token
+				token = strtok( NULL, "\n" );
+			}
+		}
+	}
 	return ( true );
 }
 
-bool	Server::checkAuthenticationCommands( std::string& input, int new_fd, User user ) {
+bool	Server::checkAuthenticationCommands( std::string& input, int new_fd, User& user, bool& passwordMatch) {
 	if ( input.find( "/PASS" ) != std::string::npos ) {
 		input.erase( std::remove(input.begin(), input.end(), '\''), input.end() );
 
@@ -69,10 +72,11 @@ bool	Server::checkAuthenticationCommands( std::string& input, int new_fd, User u
 			close( new_fd );
 			return ( false );
 		}
+		passwordMatch = true;
 		std::cout << "Correct password!" << std::endl;
 	}
 	else if ( input.find( "/NICK" ) != std::string::npos ) {
-		user.setNickname( input.substr(strlen( "/NICK " ), input.length() - strlen("/NICK ") ) );
+		user.setNickname( input.substr(strlen( "/NICK " ), input.length() - strlen("/NICK ") ) ); ;
 		std::cout << "Nickname added" << std::endl;
 	}
 	else if ( input.find( "/USER" ) != std::string::npos ) {

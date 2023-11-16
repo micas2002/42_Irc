@@ -23,7 +23,13 @@ const std::string&	User::getUsername() const { return ( _username ); }
 
 int	User::getSocketFd() const { return ( _socketFd ); }
 
-bool	User::userFieldsEmpty() { return ( _nickname.empty() || _username.empty() ); }
+bool	User::userFieldsEmpty()
+{
+	if (_nickname.empty() == true || _username.empty() == true)
+		return (true);
+	else
+		return (false);
+}
 
 void	User::setNickname( const std::string& nickname ) { _nickname = nickname; }
 

@@ -18,8 +18,20 @@
 #include <algorithm>
 
 #include <map>
+#include <vector>
 
 #include "User.hpp"
+#include "Channel.hpp"
+#include "Messages.hpp"
+
+enum COMMANDS {
+	QUIT = 806,
+	JOIN = 763,
+	KICK = 722,
+	INVITE = 1613,
+	TOPIC = 1109,
+	MODE = 715,
+};
 
 class Server
 {
@@ -35,7 +47,8 @@ class Server
 		Server&	operator = ( const Server& assign );
 
 		//Gettters
-		User				getUser(const std::string& username);
+		User&				getUser( const std::string& username );
+		User*				getUser( int socketFd );
 		const std::string&	getServerPassword() const;
 		const std::string&	getServerPort() const;
 
@@ -43,10 +56,17 @@ class Server
 		void	setServerPassword( const std::string& password );
 		void	setServerPort( const std::string& port );
 
-		// void	addUser( std::string& nickname, std::string& username, int socketFd );
-		bool	authenticateUser( int new_fd );
-		bool	checkAuthenticationCommands( std::string& input, int new_fd, User& user, bool& passwordMatch);
+		void	addUser( User& user );
+		void	addChannel( Channel& channel );
+
+		// Simple Hash Function
+		long	simpleHash( std::string& command );
+
+		//Authenticate users
+		bool	authenticateUser( int newFd );
+		bool	checkAuthenticationCommands( std::string& input, int newFd, User& user, bool& passwordMatch);
 		bool	checkIfPasswordsMatch( const std::string& input ) const;
+		bool	findDuplicateNicknames( const std::string& nickname ) const;
 
 		// Sockets
 		void	createAndBindSocket();
@@ -54,14 +74,21 @@ class Server
 		void	handleNewConnection();
 		void	handleClientData( int clientSocket );
 
-	private:
-		std::map<std::string, User>	_users;
-		std::string					_serverPassword;
-		std::string					_serverPort;
+		// Commands
+		void	selectCommand( int userSocket, std::string& command );
+		void	joinCommand( int userSocket, std::string& command );
+		void	createNewChannel( std::string& channelName, User* user );
 
-		int							_serverSocket;
-		int							_maxSocketFd;
-		fd_set						_master;
-		fd_set						_read_fds;
-		struct addrinfo				_hints;
+	private:
+		std::map<std::string, User>		_users;
+		std::map<int, User*>			_usersBySocket;
+		std::map<std::string, Channel>	_channels;
+		std::string						_serverPassword;
+		std::string						_serverPort;
+
+		int								_serverSocket;
+		int								_maxSocketFd;
+		fd_set							_master;
+		fd_set							_readFds;
+		struct addrinfo					_hints;
 };

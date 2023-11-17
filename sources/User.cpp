@@ -2,7 +2,7 @@
 
 User::User() {}
 
-User::User( const User& copy) {
+User::User( const User& copy ) {
 	*this = copy;
 }
 
@@ -25,10 +25,10 @@ int	User::getSocketFd() const { return ( _socketFd ); }
 
 bool	User::userFieldsEmpty()
 {
-	if (_nickname.empty() == true || _username.empty() == true)
-		return (true);
+	if ( _nickname.empty() == true || _username.empty() == true )
+		return ( true );
 	else
-		return (false);
+		return ( false );
 }
 
 void	User::setNickname( const std::string& nickname ) { _nickname = nickname; }

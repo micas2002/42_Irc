@@ -24,7 +24,7 @@ class Channel {
 	public:
 		// Constructors
 		Channel();
-		Channel(std::string name);
+		Channel( std::string name );
 		Channel( const Channel& copy );
 
 		// Destructor
@@ -34,19 +34,22 @@ class Channel {
 		Channel&	operator = ( const Channel& assign );
 
 		//Gettters
-		
+		const std::string&	getPassword() const;
+		const std::string&	getName() const;
+		const std::string&	getTopic() const;
+
 
 		//Setters
-		void	setPassword(std::string password);
-		void	setTopic(std::string topic);
-		void	setUserLimit(int userLimit);
-		void	addUser(User* newUser);
-		void	addOperator(User* newOperator);
-		void	addInvite(User* newInvite);
+		void	setPassword( std::string password );
+		void	setTopic( std::string topic );
+		void	setUserLimit( int userLimit );
+		void	addUser( User* newUser );
+		void	addOperator( User* newOperator );
+		void	addInvite( User* newInvite);
 
 		//Removers
 		void	ejectUser(User* user);
-		void	ejectOperator(User* operator);
+		void	ejectOperator(User* user);
 		void	removeInvite(User* invite);
 
 	private:

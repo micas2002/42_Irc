@@ -62,6 +62,8 @@ bool	Server::checkAuthenticationCommands( std::string& input, int newFd, User& u
 			user.setUsername( input.substr( strlen( "USER " ), input.length() - strlen( "USER " ) ) );	
 			send( newFd, SERVER_USERNAME_ADDED, 24, 0 );
 	}
+	else if ( input.find( "CAP" ) != std::string::npos )
+		return ( true );
 	else
 		send( newFd, SERVER_INVALID_COMMAND, 69, 0 );
 	return ( true );

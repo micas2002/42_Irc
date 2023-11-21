@@ -88,16 +88,18 @@ void	Server::handleNewConnection() {
 		send( newFd, "Welcome to our IRC server. Please input username, nickname and server password.\n", 80, 0 );
 		send( newFd, "Use /NICK, /USER and /PASS commands.\n", 37, 0 );
 
-		if ( authenticateUser( newFd ) ) // gets user information, like username, password, etc
-		{
-			FD_SET( newFd, &_master ); // add to master set
+		FD_SET( newFd, &_master ); // add to master set
 
-			if ( newFd > _maxSocketFd )
-				_maxSocketFd = newFd;
-			
-			inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
-			std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
-		}
+		if ( newFd > _maxSocketFd )
+			_maxSocketFd = newFd;
+		
+		inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
+		std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
+
+		User user;
+
+		user.setSocketFd( newFd );
+		addUser( user );
 
 	}
 }

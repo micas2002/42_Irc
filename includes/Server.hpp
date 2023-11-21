@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdio>
-#include <string.h>
+#include <string>
+#include <sstream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -50,7 +51,7 @@ class Server
 		Server&	operator = ( const Server& assign );
 
 		//Gettters
-		User&				getUser( const std::string& username );
+		User&				getUser( const std::string& nickname );
 		User*				getUser( int socketFd );
 		const std::string&	getServerPassword() const;
 		const std::string&	getServerPort() const;
@@ -65,9 +66,6 @@ class Server
 		// Simple Hash Function
 		long	simpleHash( std::string& command );
 
-		//Authenticate users
-		bool	authenticateUser( int newFd );
-		bool	checkAuthenticationCommands( std::string& input, int newFd, User& user, bool& passwordMatch);
 		bool	checkIfPasswordsMatch( const std::string& input ) const;
 		bool	findDuplicateNicknames( const std::string& nickname ) const;
 
@@ -82,6 +80,8 @@ class Server
 		void	joinCommand( int userSocket, std::string& command );
 		void	createNewChannel( std::string& channelName, User* user );
 		void	passCommand( int userSocket, std::string& command );
+		void	nickCommand( int userSocket, std::string& command );
+		void	userCommand( int userSocket, std::string& command );
 
 	private:
 		std::map<std::string, User>		_users;

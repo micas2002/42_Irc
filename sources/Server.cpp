@@ -74,6 +74,15 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 		
 		case MODE:
 			break;
+
+		case PASS:
+			break;
+
+		case NICK:
+			break;
+
+		case USER:
+			break;
 		
 		default:
 			break;
@@ -95,10 +104,24 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 }
 
 void	Server::createNewChannel( std::string& channelName, User* user ) {
-	Channel channel;
+	Channel channel( channelName );
 	
-	
+
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
+}
+
+void	Server::passCommand( int userSocket, std::string& command ) {
+	// command.erase( std::remove(command.begin(), command.end(), '\''), command.end() );
+
+	if ( checkIfPasswordsMatch( command ) == false )
+	{
+		std::cout << SERVER_INCORRECT_PASSWORD << std::endl;
+		send( userSocket, SERVER_INCORRECT_PASSWORD,  56, 0 );
+		close( userSocket );
+		FD_CLR( userSocket, &_master );
+		return;
+	}
+	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
 }

@@ -89,39 +89,91 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 	}
 }
 
+std::vector<std::string>	Server::getParameters( std::string& command ) {
+	std::vector<std::string>	parameters;
+	std::istringstream			commandStream( command );
+	std::string					tempString;
+
+	while ( getline( commandStream, tempString, ' ') )
+		parameters.push_back( tempString );
+	
+	return ( parameters );
+}
+
 void	Server::joinCommand( int userSocket, std::string& command ) {
-	std::string									channelName;
-	std::map<std::string, Channel>::iterator	iter;
-	User*										user;
+	std::vector<std::string>	parameters;
+	std::vector<std::string>	channelsKeys;
+	std::string					channelName;
+	std::string					channelKey;
 
-	channelName = command.substr( 5, command.length() - 5 );
-	iter = _channels.find( channelName );
-	user = getUser( userSocket );
+	parameters = getParameters( command );
+	if ( parameters.size() < 2 ) {
+		// ERR_NEEDMOREPARAMS 461
+		return ;
+	}
+	if ( parameters.size() == 3 ) {
+		std::istringstream	channelKeyStream( parameters.at( 2 ) );
 
-	if ( iter == _channels.end() )
-		createNewChannel( channelName, user );
-		
+		while ( getline( channelKeyStream, channelKey, ',' ) ) {
+			channelsKeys.push_back( channelKey );
+		}
+	}
+
+	std::istringstream			channelsStream( parameters.at( 1 ) );
+
+	while ( getline( channelsStream, channelName, ',' ) ) {
+		if ( isValidChannelName( channelName ) == false ) {
+			// ERR_BADCHANMASK 476
+			continue ;
+		}
+
+		if ( _channels.find( channelName ) == _channels.end() ) 
+			createNewChannel( channelName, getUser( userSocket ) );
+		else 
+			addUserToChannel( channelName, getUser( userSocket ), channelsKeys );
+	}
+}
+
+bool	Server::isValidChannelName( std::string& channelName ) {
+	return ( channelName[0] == '#' && channelName.length() <= 51 && \
+		channelName.find( ' ' ) == std::string::npos && channelName.find( ',' ) == std::string::npos );
 }
 
 void	Server::createNewChannel( std::string& channelName, User* user ) {
 	Channel channel( channelName );
 	
-
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
+	// send JOIN message to user
+
 }
 
-void	Server::passCommand( int userSocket, std::string& command ) {
-	// command.erase( std::remove(command.begin(), command.end(), '\''), command.end() );
+void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
+	Channel&		channel = _channels[channelName];
+	std::string&	key = channelsKeys.at( 0 );
+	const std::string&	channelPassword = channel.getPassword();
 
-	if ( checkIfPasswordsMatch( command ) == false )
-	{
-		std::cout << SERVER_INCORRECT_PASSWORD << std::endl;
-		send( userSocket, SERVER_INCORRECT_PASSWORD,  56, 0 );
-		close( userSocket );
-		FD_CLR( userSocket, &_master );
-		return;
+	if ( channelPassword.empty() == false ) {
+		if ( key != channelPassword ) {
+			// ERR_BADCHANNELKEY 475
+			return ;
+		}
 	}
-	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
+	if ( channel.getUserLimit() != -1 && channel.getUserCount() >= channel.getUserLimit() ) {
+		// ERR_CHANNELISFULL 471
+		return ;
+	}
+	if ( channel.getInviteOnly() == true) {
+		if ( channel.isInvited( user ) == false ) {
+			// ERR_INVITEONLYCHAN 473
+			return ;
+		}
+	}
+	
+	if ( channelPassword.empty() == false )
+		channelsKeys.erase( channelsKeys.begin() );
+	channel.removeInvite( user );
+	channel.addUser( user );
+	// send JOIN message to user
 }

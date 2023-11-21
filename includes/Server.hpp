@@ -16,6 +16,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <algorithm>
+#include <sstream>
 
 #include <map>
 #include <vector>
@@ -78,10 +79,15 @@ class Server
 		void	handleClientData( int clientSocket );
 
 		// Commands
-		void	selectCommand( int userSocket, std::string& command );
+		void						selectCommand( int userSocket, std::string& command );
+		std::vector<std::string>	getParameters( std::string& command );
+
+		// JOIN
 		void	joinCommand( int userSocket, std::string& command );
+		bool	isValidChannelName( std::string& channelName );
 		void	createNewChannel( std::string& channelName, User* user );
-		void	passCommand( int userSocket, std::string& command );
+		void	addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
+
 
 	private:
 		std::map<std::string, User>		_users;

@@ -31,6 +31,9 @@ enum COMMANDS {
 	INVITE = 1613,
 	TOPIC = 1109,
 	MODE = 715,
+	PASS =  791,
+	NICK = 725,
+	USER = 786,
 };
 
 class Server
@@ -78,6 +81,7 @@ class Server
 		void	selectCommand( int userSocket, std::string& command );
 		void	joinCommand( int userSocket, std::string& command );
 		void	createNewChannel( std::string& channelName, User* user );
+		void	passCommand( int userSocket, std::string& command );
 
 	private:
 		std::map<std::string, User>		_users;

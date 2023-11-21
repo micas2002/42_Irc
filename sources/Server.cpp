@@ -22,9 +22,19 @@ Server&	Server::operator=( const Server& assign ) {
 	return ( *this );
 }
 
-User&	Server::getUser( const std::string& username ) { return ( _users[username] ); }
+User*	Server::getUser( const std::string& nickname ) {
+	std::map< std::string, User >::iterator it = _users.find( nickname );
+	if ( it != _users.end() )
+		return ( &(it->second) );
+	return ( NULL );
+}
 
-User*	Server::getUser( int socketFd ) { return ( _usersBySocket[socketFd] ); }
+User*	Server::getUser( int socketFd ){
+	std::map< int, User* >::iterator it = _usersBySocket.find( socketFd );
+	if ( it != _usersBySocket.end() )
+		return ( it->second );
+	return ( NULL );
+}
 
 const std::string&	Server::getServerPassword() const { return ( _serverPassword ); }
 
@@ -83,8 +93,13 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 
 		case USER:
 			break;
+
+		case PRIVMSG:
+			messageComand( userSocket, command );
+			break;
 		
 		default:
+			std::cout << simpleHash( command ) << std::endl;
 			break;
 	}
 }
@@ -124,4 +139,48 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 		return;
 	}
 	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
+}
+
+void	Server::messageComand( int userSocket, std::string& command )
+{
+	User*				sender;
+	User*				recipient;
+	std::string			message;
+	std::ostringstream	os;
+	char 				ip6[INET6_ADDRSTRLEN];
+	std::string			server_message;
+	in6_addr			addr;
+
+	message = command.substr( command.find( ':' ) + 1 );
+	sender = getUser( userSocket );
+	recipient = getUser( extractNick( command ) );
+	if ( recipient == NULL ) {
+		// Implement error msg
+		std::cout << "Recipient error" << std::endl;
+		return ;
+	}
+	if ( message.length() == 0)  {
+		//implement error msg
+		std::cout << "Message error" << std::endl;
+		return ;
+	}
+	addr = sender->getIp();
+	inet_ntop( AF_INET6, &addr, ip6, INET6_ADDRSTRLEN );
+	os << ":" << sender->getNickname() << "!" << sender->getUsername() << "@" << ip6 << " PRIVMSG " << recipient->getNickname() << " :" << message;
+	server_message = os.str();
+
+	send( recipient->getSocketFd(), server_message.c_str(), server_message.length(), 0);
+}
+
+std::string	Server::extractNick( std::string& message )
+{
+	std::string::size_type	start = message.find(' ');
+	if (start != std::string::npos)
+	{
+		start += 1;
+		std::string::size_type	end = message.find(' ', start);
+		if (end != std::string::npos)
+			return ( message.substr( start, end - start ) );
+	}
+	return "";
 }

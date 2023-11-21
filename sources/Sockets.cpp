@@ -95,6 +95,7 @@ void	Server::handleNewConnection() {
 			if ( newFd > _maxSocketFd )
 				_maxSocketFd = newFd;
 			
+			_usersBySocket.find(newFd)->second->setIp(theirAddr.sin6_addr);
 			inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
 			std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
 		}

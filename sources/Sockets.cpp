@@ -1,5 +1,6 @@
 #include "Server.hpp"
 
+
 void	Server::createAndBindSocket() {
 	FD_ZERO( &_master );    // clear the master and temp sets
 	FD_ZERO( &_readFds );
@@ -96,6 +97,7 @@ void	Server::handleNewConnection() {
 				_maxSocketFd = newFd;
 			
 			inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
+			_usersBySocket.find(newFd)->second->setIp(ip6);
 			std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
 		}
 
@@ -119,7 +121,18 @@ void	Server::handleClientData( int clientSocket ) {
 	// we got some data from a client
 	std::string	command( buffer );
 	command.erase( --command.end() );
-	selectCommand( clientSocket, command );
+	std::vector<std::string>	parameters;
+	std::istringstream			f( command );
+	std::string					string;
+
+	while ( getline( f, string ) )
+		parameters.push_back( string );
+
+	for (std::vector<std::string>::iterator it = parameters.begin() ; it != parameters.end() ; it++ ) {
+		it->erase( it->find( '\r' ) );
+		std::cout << "command: " << *it << std::endl;
+		selectCommand( clientSocket, *it );
+	}
 	// for( int index = 3; index <= _maxSocketFd; index++ ) {// send to everyone except the listener and ourselves!
 	// 	if ( FD_ISSET( index, &_master ) && index != _maxSocketFd && index != clientSocket && send( index, buffer, numberOfBytes, 0 ) == -1 ) 
 	// 		perror("send");

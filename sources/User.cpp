@@ -23,7 +23,7 @@ const std::string&	User::getUsername() const { return ( _username ); }
 
 int	User::getSocketFd() const { return ( _socketFd ); }
 
-in6_addr	User::getIp() const { return ( _ip ); }	
+char*	User::getIp() const { return ( _ip ); }	
 
 bool	User::userFieldsEmpty()
 {
@@ -39,4 +39,4 @@ void	User::setUsername( const std::string& username ) { _username = username; }
 
 void	User::setSocketFd( const int socketFd ) { _socketFd = socketFd; }
 
-void	User::setIp( in6_addr new_ip ) { _ip = new_ip; }
+void	User::setIp( char* new_ip ) { _ip = new_ip; }

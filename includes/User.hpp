@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <arpa/inet.h>
 
 class User
 {
@@ -19,17 +20,22 @@ class User
 		const std::string&	getNickname() const;
 		const std::string&	getUsername() const;
 		int					getSocketFd() const;
+
 		std::string		getMessagePrefix() const;
+		char*			getIp() const;
+
 
 		// Setters
 		void	setNickname( const std::string& nickname );
 		void	setUsername( const std::string& username );
 		void	setSocketFd( const int socketFd );
+		void	setIp( char* ip );
 
 		bool	userFieldsEmpty();
 	
 	private:
 		std::string	_nickname;
 		std::string	_username;
+		char*		_ip;
 		int			_socketFd;
 };

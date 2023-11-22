@@ -36,6 +36,7 @@ enum COMMANDS {
 	PASS =  791,
 	NICK = 725,
 	USER = 786,
+	PRIVMSG = 2187,
 };
 
 class Server
@@ -52,7 +53,7 @@ class Server
 		Server&	operator = ( const Server& assign );
 
 		//Gettters
-		User&				getUser( const std::string& username );
+		User*				getUser( const std::string& username );
 		User*				getUser( int socketFd );
 		const std::string&	getServerPassword() const;
 		const std::string&	getServerPort() const;
@@ -80,6 +81,7 @@ class Server
 		void	handleClientData( int clientSocket );
 
 		// Commands
+
 		void						selectCommand( int userSocket, std::string& command );
 		std::vector<std::string>	getParameters( std::string& command );
 
@@ -89,6 +91,8 @@ class Server
 		void	createNewChannel( std::string& channelName, User* user );
 		void	addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
 
+		void		messageComand( int userSocket, std::string& command );
+		std::string	extractNick( std::string& message );
 
 	private:
 		std::map<std::string, User>		_users;

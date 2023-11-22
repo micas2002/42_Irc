@@ -145,8 +145,11 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
-	// send JOIN message to user
 
+	// send JOIN message to user
+	std::string joinMessage( user->getMessagePrefix() + "JOIN " + channelName + "\r\n" );
+	
+	send ( user->getSocketFd(), joinMessage.c_str(), joinMessage.length(), 0 );
 }
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
@@ -175,5 +178,9 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		channelsKeys.erase( channelsKeys.begin() );
 	channel.removeInvite( user );
 	channel.addUser( user );
+
 	// send JOIN message to user
+	std::string joinMessage( user->getMessagePrefix() + "JOIN " + channelName + "\r\n" );
+	
+	send ( user->getSocketFd(), joinMessage.c_str(), joinMessage.length(), 0 );
 }

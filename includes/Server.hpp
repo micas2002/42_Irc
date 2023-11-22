@@ -24,6 +24,7 @@
 #include "User.hpp"
 #include "Channel.hpp"
 #include "Messages.hpp"
+#include "ServerMessages.hpp"
 
 enum COMMANDS {
 	QUIT = 806,

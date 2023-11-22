@@ -37,6 +37,10 @@ class Channel {
 		const std::string&	getPassword() const;
 		const std::string&	getName() const;
 		const std::string&	getTopic() const;
+		int					getUserLimit() const;
+		int					getUserCount() const;
+		bool				getInviteOnly() const;
+		bool				isInvited( User* user ) const;
 
 
 		//Setters
@@ -51,6 +55,8 @@ class Channel {
 		void	ejectUser(User* user);
 		void	ejectOperator(User* user);
 		void	removeInvite(User* invite);
+
+
 
 	private:
 		const std::string						_name;

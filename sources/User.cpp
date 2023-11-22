@@ -23,6 +23,11 @@ const std::string&	User::getUsername() const { return ( _username ); }
 
 int	User::getSocketFd() const { return ( _socketFd ); }
 
+std::string	User::getMessagePrefix() const {
+	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + "localhost " );
+	return ( messagePrefix );
+}
+
 char*	User::getIp() const { return ( _ip ); }	
 
 bool	User::userFieldsEmpty()

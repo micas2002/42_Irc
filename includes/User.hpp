@@ -20,7 +20,10 @@ class User
 		const std::string&	getNickname() const;
 		const std::string&	getUsername() const;
 		int					getSocketFd() const;
+
+		std::string		getMessagePrefix() const;
 		char*			getIp() const;
+
 
 		// Setters
 		void	setNickname( const std::string& nickname );

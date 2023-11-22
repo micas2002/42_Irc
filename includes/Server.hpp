@@ -24,6 +24,7 @@
 #include "User.hpp"
 #include "Channel.hpp"
 #include "Messages.hpp"
+#include "ServerMessages.hpp"
 
 enum COMMANDS {
 	QUIT = 806,
@@ -80,10 +81,16 @@ class Server
 		void	handleClientData( int clientSocket );
 
 		// Commands
-		void		selectCommand( int userSocket, std::string& command );
-		void		joinCommand( int userSocket, std::string& command );
-		void		createNewChannel( std::string& channelName, User* user );
-		void		passCommand( int userSocket, std::string& command );
+
+		void						selectCommand( int userSocket, std::string& command );
+		std::vector<std::string>	getParameters( std::string& command );
+
+		// JOIN
+		void	joinCommand( int userSocket, std::string& command );
+		bool	isValidChannelName( std::string& channelName );
+		void	createNewChannel( std::string& channelName, User* user );
+		void	addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
+
 		void		messageComand( int userSocket, std::string& command );
 		std::string	extractNick( std::string& message );
 

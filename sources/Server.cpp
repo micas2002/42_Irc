@@ -55,9 +55,7 @@ long	Server::simpleHash( std::string& command ) {
 }
 
 bool	Server::checkIfPasswordsMatch(const std::string& input ) const {
-	int	passCommandLength = strlen( "PASS " );
-
-	return ( _serverPassword.compare( input.substr( passCommandLength, input.length() - passCommandLength - 1 ) ) == 0 );
+	return ( _serverPassword.compare( input ) == 0 );
 }
 
 bool	Server::findDuplicateNicknames( const std::string& nickname ) const {

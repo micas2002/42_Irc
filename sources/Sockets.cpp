@@ -100,7 +100,6 @@ void	Server::handleNewConnection() {
 
 		user.setSocketFd( newFd );
 		addUser( user );
-
 	}
 }
 
@@ -120,8 +119,20 @@ void	Server::handleClientData( int clientSocket ) {
 	}
 	// we got some data from a client
 	std::string	command( buffer );
+
 	command.erase( --command.end() );
-	selectCommand( clientSocket, command );
+	std::vector<std::string>	parameters;
+    std::istringstream			f( command );
+    std::string					string;
+
+    while ( getline( f, string ) )
+		parameters.push_back( string );
+
+	for (std::vector<std::string>::iterator it = parameters.begin() ; it != parameters.end() ; it++ ) {
+		it->erase( it->find( '\r' ) );
+		std::cout << "command: " << *it << std::endl;
+		selectCommand( clientSocket, *it );
+	}
 	// for( int index = 3; index <= _maxSocketFd; index++ ) {// send to everyone except the listener and ourselves!
 	// 	if ( FD_ISSET( index, &_master ) && index != _maxSocketFd && index != clientSocket && send( index, buffer, numberOfBytes, 0 ) == -1 ) 
 	// 		perror("send");

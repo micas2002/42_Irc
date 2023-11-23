@@ -1,6 +1,6 @@
 #include "../includes/Channel.hpp"
 
-Channel::Channel() : _name( "" ) {}
+Channel::Channel() : _name( "" ), _userLimit( -1 ) {}
 
 Channel::Channel( std::string name ) : _name( name ) {}
 
@@ -30,6 +30,18 @@ const std::string&	Channel::getPassword() const { return ( _channelPassword ); }
 const std::string&	Channel::getName() const { return ( _name ); }
 
 const std::string&	Channel::getTopic() const { return ( _topic ); }
+
+int		Channel::getUserLimit() const { return ( _userLimit ); }
+
+int		Channel::getUserCount() const { return ( _users.size() ); }
+
+bool	Channel::getInviteOnly() const { return ( _inviteOnly ); }
+
+bool	Channel::isInvited( User* user ) const {
+	if ( _inviteList.find( user->getUsername() ) != _inviteList.end() )
+		return ( true );
+	return ( false );
+}
 
 void	Channel::setPassword( std::string password ) { _channelPassword = password; }
 

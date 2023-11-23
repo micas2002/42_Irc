@@ -17,6 +17,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <algorithm>
+#include <sstream>
 
 #include <map>
 #include <vector>
@@ -24,6 +25,7 @@
 #include "User.hpp"
 #include "Channel.hpp"
 #include "Messages.hpp"
+#include "ServerMessages.hpp"
 
 enum COMMANDS {
 	QUIT = 806,
@@ -35,6 +37,7 @@ enum COMMANDS {
 	PASS =  791,
 	NICK = 725,
 	USER = 786,
+	PRIVMSG = 2187,
 };
 
 class Server
@@ -51,7 +54,7 @@ class Server
 		Server&	operator = ( const Server& assign );
 
 		//Gettters
-		User&				getUser( const std::string& nickname );
+		User*				getUser( const std::string& username );
 		User*				getUser( int socketFd );
 		const std::string&	getServerPassword() const;
 		const std::string&	getServerPort() const;
@@ -76,16 +79,26 @@ class Server
 		void	handleClientData( int clientSocket );
 
 		// Commands
-		void	selectCommand( int userSocket, std::string& command );
+
+		void						selectCommand( int userSocket, std::string& command );
+		std::vector<std::string>	getParameters( std::string& command );
+
+		// JOIN
 		void	joinCommand( int userSocket, std::string& command );
+		bool	isValidChannelName( std::string& channelName );
 		void	createNewChannel( std::string& channelName, User* user );
-		void	passCommand( int userSocket, std::string& command );
+		void	addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
+
+		void		messageComand( int userSocket, std::string& command );
+		std::string	extractNick( std::string& message );
+ 
+    void	passCommand( int userSocket, std::string& command );
 		void	nickCommand( int userSocket, std::string& command );
 		void	userCommand( int userSocket, std::string& command );
 
 	private:
 		std::map<std::string, User>		_users;
-		std::map<int, User*>			_usersBySocket;
+		std::map<int, User&>				_usersBySocket;
 		std::map<std::string, Channel>	_channels;
 		std::string						_serverPassword;
 		std::string						_serverPort;

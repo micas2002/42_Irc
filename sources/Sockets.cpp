@@ -1,5 +1,6 @@
 #include "Server.hpp"
 
+
 void	Server::createAndBindSocket() {
 	FD_ZERO( &_master );    // clear the master and temp sets
 	FD_ZERO( &_readFds );
@@ -91,10 +92,12 @@ void	Server::handleNewConnection() {
 		FD_SET( newFd, &_master ); // add to master set
 
 		if ( newFd > _maxSocketFd )
-			_maxSocketFd = newFd;
-		
-		inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
-		std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
+				_maxSocketFd = newFd;
+			
+			inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
+			_usersBySocket.find(newFd)->second->setIp(ip6);
+			std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
+		}
 
 		User user;
 
@@ -122,11 +125,11 @@ void	Server::handleClientData( int clientSocket ) {
 
 	command.erase( --command.end() );
 	std::vector<std::string>	parameters;
-    std::istringstream			f( command );
-    std::string					string;
+  std::istringstream			f( command );
+  std::string					string;
 
-    while ( getline( f, string ) )
-		parameters.push_back( string );
+  while ( getline( f, string ) )
+    parameters.push_back( string );
 
 	for (std::vector<std::string>::iterator it = parameters.begin() ; it != parameters.end() ; it++ ) {
 		it->erase( it->find( '\r' ) );

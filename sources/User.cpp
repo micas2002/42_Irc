@@ -47,10 +47,17 @@ void	User::setNicknameStatusTrue() { _nicknameStatus = true; }
 
 void	User::setUserIsAuthenticatedTrue() { _userIsAuthenticated = true; }
 
-bool	User::userFieldsEmpty()
-{
+void	User::setIp( char* new_ip ) { _ip = new_ip; }
+
+std::string	User::getMessagePrefix() const {
+	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + "localhost " );
+	return ( messagePrefix );
+}
+
+char*	User::getIp() const { return ( _ip ); }	
+
+bool	User::userFieldsEmpty() {
 	if ( _nickname.empty() == true || _username.empty() == true )
 		return ( true );
-	else
-		return ( false );
+	return ( false );
 }

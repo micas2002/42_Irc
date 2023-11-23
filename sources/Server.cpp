@@ -30,12 +30,9 @@ User*	Server::getUser( const std::string& nickname ) {
 }
 
 User*	Server::getUser( int socketFd ){
-	std::map< int, User* >::iterator it = _usersBySocket.find( socketFd );
+	std::map< int, User& >::iterator it = _usersBySocket.find( socketFd );
 	if ( it != _usersBySocket.end() )
-	{
-		std::cout << "Entering where it should" << std::endl;
-		return ( it->second );
-	}
+		return ( &(it->second) );
 	return ( NULL );
 }
 
@@ -49,7 +46,9 @@ void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
 
 void	Server::addUser( User& user ) {
 	_users.insert( std::pair<std::string, User>( user.getNickname(), user ) );
-	_usersBySocket.insert( std::pair<int, User*>( user.getSocketFd(),  &user ) );
+
+	User& user2 = _users.find( user.getNickname() )->second;
+	_usersBySocket.insert( std::pair<int, User&>( user2.getSocketFd(),  user2 ) );
 }
 
 void	Server::addChannel( Channel& channel ) {
@@ -123,6 +122,7 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 	std::vector<std::string>	channelsKeys;
 	std::string					channelName;
 	std::string					channelKey;
+	User*						user = getUser( userSocket );
 
 	parameters = getParameters( command );
 	if ( parameters.size() < 2 ) {
@@ -146,9 +146,9 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 		}
 
 		if ( _channels.find( channelName ) == _channels.end() ) 
-			createNewChannel( channelName, getUser( userSocket ) );
+			createNewChannel( channelName, user );
 		else 
-			addUserToChannel( channelName, getUser( userSocket ), channelsKeys );
+			addUserToChannel( channelName, user, channelsKeys );
 	}
 }
 
@@ -239,3 +239,6 @@ std::string	Server::extractNick( std::string& message )
 	}
 	return "";
 }
+
+
+

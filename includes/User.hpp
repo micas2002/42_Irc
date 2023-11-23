@@ -8,6 +8,7 @@ class User
 	public:
 		// Constructors
 		User();
+		User(std::string);
 		User( const User& copy );
 
 		// Destructor
@@ -23,10 +24,9 @@ class User
 		bool				getPasswordStatus() const;
 		bool				getUsernameStatus() const;
 		bool				getNicknameStatus() const;
-		bool				getUserIsAuthenticated() const;
+		bool				getIsAuthenticated() const;
 
 		std::string		getMessagePrefix() const;
-		char*			getIp() const;
 
 
 		// Setters
@@ -36,18 +36,16 @@ class User
 		void	setPasswordStatusTrue();
 		void	setUsernameStatusTrue();
 		void	setNicknameStatusTrue();
-		void	setUserIsAuthenticatedTrue();
-		void	setIp( char* ip );
+		void	setIsAuthenticatedTrue();
 
 		bool	userFieldsEmpty();
 	
 	private:
 		std::string	_nickname;
 		std::string	_username;
-		char*		_ip;
 		int			_socketFd;
 		bool		_passwordStatus;
 		bool		_usernameStatus;
 		bool		_nicknameStatus;
-		bool		_userIsAuthenticated;
+		bool		_isAuthenticated;
 };

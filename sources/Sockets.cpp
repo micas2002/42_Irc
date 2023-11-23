@@ -94,13 +94,12 @@ void	Server::handleNewConnection() {
 		if ( newFd > _maxSocketFd )
 				_maxSocketFd = newFd;
 			
-			inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
-			_usersBySocket.find(newFd)->second->setIp(ip6);
-			std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
-		}
-
-		User user;
-
+		inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
+		std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
+		std::ostringstream oss;
+		oss << "Default " << newFd;
+		std::string teste = oss.str();
+		User user(oss.str());
 		user.setSocketFd( newFd );
 		addUser( user );
 	}
@@ -131,9 +130,8 @@ void	Server::handleClientData( int clientSocket ) {
   while ( getline( f, string ) )
     parameters.push_back( string );
 
-	for (std::vector<std::string>::iterator it = parameters.begin() ; it != parameters.end() ; it++ ) {
+	for (std::vector<std::string>::iterator it = parameters.begin() ; it != --parameters.end() ; it++ ) {
 		it->erase( it->find( '\r' ) );
-		std::cout << "command: " << *it << std::endl;
 		selectCommand( clientSocket, *it );
 	}
 	// for( int index = 3; index <= _maxSocketFd; index++ ) {// send to everyone except the listener and ourselves!

@@ -1,18 +1,35 @@
 #include "User.hpp"
 
-User::User() : _passwordStatus( false ), _usernameStatus( false ), _nicknameStatus( false ), _userIsAuthenticated( false ) {}
+User::User() :_nickname( "InitialNickname" ), _username( "" ) {
+	_passwordStatus = false;
+	_usernameStatus = false;
+	_nicknameStatus = false;
+	_isAuthenticated = false;
+}
+
+User::User(std::string username) :_nickname( username ), _username( "" ) {}
 
 User::User( const User& copy ) {
-	*this = copy;
+	_nickname = copy._nickname;
+	_username = copy._username;
+	_socketFd = copy._socketFd;
+	_passwordStatus = copy._passwordStatus;
+	_usernameStatus = copy._usernameStatus;
+	_nicknameStatus = copy._nicknameStatus;
+	_isAuthenticated = copy._isAuthenticated;
 }
 
 User::~User() {}
 
-User&	User::operator=( const User& assign ) {
-	if (this != &assign) {
-		_nickname = assign._nickname;
-		_username = assign._username;
-		_socketFd = assign._socketFd;
+User&	User::operator=( const User& copy ) {
+	if (this != &copy) {
+		_nickname = copy._nickname;
+		_username = copy._username;
+		_socketFd = copy._socketFd;
+		_passwordStatus = copy._passwordStatus;
+		_usernameStatus = copy._usernameStatus;
+		_nicknameStatus = copy._nicknameStatus;
+		_isAuthenticated = copy._isAuthenticated;
 	}
 	return ( *this );
 }
@@ -30,7 +47,7 @@ bool	User::getUsernameStatus() const { return ( _usernameStatus ); }
 
 bool	User::getNicknameStatus() const { return ( _nicknameStatus ); }
 
-bool	User::getUserIsAuthenticated() const { return ( _userIsAuthenticated ); }
+bool	User::getIsAuthenticated() const { return ( _isAuthenticated ); }
 
 // Setters
 void	User::setNickname( const std::string& nickname ) { _nickname = nickname; }
@@ -45,16 +62,12 @@ void	User::setUsernameStatusTrue() { _usernameStatus = true; }
 
 void	User::setNicknameStatusTrue() { _nicknameStatus = true; }
 
-void	User::setUserIsAuthenticatedTrue() { _userIsAuthenticated = true; }
-
-void	User::setIp( char* new_ip ) { _ip = new_ip; }
+void	User::setIsAuthenticatedTrue() { _isAuthenticated = true; }
 
 std::string	User::getMessagePrefix() const {
 	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + "localhost " );
 	return ( messagePrefix );
 }
-
-char*	User::getIp() const { return ( _ip ); }	
 
 bool	User::userFieldsEmpty() {
 	if ( _nickname.empty() == true || _username.empty() == true )

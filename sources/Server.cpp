@@ -44,7 +44,7 @@ void	Server::setServerPassword( const std::string& password) { _serverPassword =
 
 void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
 
-void	Server::addUser( User& user ) {
+void	Server::addUser( User user ) {
 	_users.insert( std::pair<std::string, User>( user.getNickname(), user ) );
 
 	User& user2 = _users.find( user.getNickname() )->second;
@@ -53,6 +53,11 @@ void	Server::addUser( User& user ) {
 
 void	Server::addChannel( Channel& channel ) {
 	_channels.insert( std::pair<std::string, Channel>( channel.getName(), channel ) );
+}
+
+void	Server::removeUser( User& user ) {
+	_usersBySocket.erase( user.getSocketFd() );
+	_users.erase( user.getNickname() );
 }
 
 long	Server::simpleHash( std::string& command ) {
@@ -115,6 +120,7 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 		
 		default:
 			std::cout << simpleHash( command ) << std::endl;
+			std::cout << command << std::endl;
 			break;
 	}
 }
@@ -217,7 +223,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 }
 
 void	Server::passCommand( int userSocket, std::string& command ) {
-	User*	user = getUser ( userSocket );
+	User*	user = getUser( userSocket );
 	
 	if ( user->getPasswordStatus() == true ) {
 		send ( userSocket, "PASS: You may not reregister\n", 23, 0);
@@ -261,7 +267,13 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 	User* user = getUser( userSocket );
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
-		user->setNickname( parameters.at( 1 ) ); ;
+
+		User	newUser( *user );
+
+		newUser.setNickname( parameters.at( 1 ) );
+		removeUser( *user );
+		addUser( newUser );
+
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
 	}
 	else
@@ -269,7 +281,9 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 }
 
 void	Server::userCommand( int userSocket, std::string& command ) {
-	if ( getUser( userSocket )->getUsernameStatus() == true ) {
+	User* user = getUser( userSocket );
+
+	if ( user->getUsernameStatus() == true ) {
 		send (userSocket, "USER: You may not reregister\n", 23, 0);
 		return;
 	}
@@ -286,10 +300,8 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 		return;
 	}
 
-	User* user = getUser( userSocket );
-
-	user->setUsername( parameters.at( 1 ) );	
-			send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
+	user->setUsername( parameters.at( 1 ) );
+	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
 }
 
 void	Server::messageComand( int userSocket, std::string& command )
@@ -312,8 +324,9 @@ void	Server::messageComand( int userSocket, std::string& command )
 		return ;
 	}
 
-	std::string	server_message( ":" + sender->getNickname() + "!" + sender->getUsername() + "@" + "localhost" + " PRIVMSG " + recipient->getNickname() + " :" + message );
-	send( recipient->getSocketFd(), server_message.c_str(), server_message.length(), 0);
+	std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
+	std::cout << server_message << std::endl;
+	send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0);
 }
 
 std::string	Server::extractNick( std::string& message )
@@ -324,7 +337,7 @@ std::string	Server::extractNick( std::string& message )
 		start += 1;
 		std::string::size_type	end = message.find(' ', start);
 		if (end != std::string::npos)
-			return ( (message.substr( start, end - start ) + '\r') );
+			return ( (message.substr( start, end - start )) );
 	}
 	return "";
 }

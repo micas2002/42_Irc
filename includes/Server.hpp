@@ -63,8 +63,11 @@ class Server
 		void	setServerPassword( const std::string& password );
 		void	setServerPort( const std::string& port );
 
-		void	addUser( User& user );
+		void	addUser( User user );
 		void	addChannel( Channel& channel );
+
+		// Removers
+		void	removeUser( User& user );
 
 		// Simple Hash Function
 		long	simpleHash( std::string& command );

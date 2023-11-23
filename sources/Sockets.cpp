@@ -89,11 +89,9 @@ void	Server::handleNewConnection() {
 		send( newFd, "Welcome to our IRC server. Please input username, nickname and server password.\n", 80, 0 );
 		send( newFd, "Use /NICK, /USER and /PASS commands.\n", 37, 0 );
 
-		if ( authenticateUser( newFd ) ) // gets user information, like username, password, etc
-		{
-			FD_SET( newFd, &_master ); // add to master set
+		FD_SET( newFd, &_master ); // add to master set
 
-			if ( newFd > _maxSocketFd )
+		if ( newFd > _maxSocketFd )
 				_maxSocketFd = newFd;
 			
 			inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
@@ -101,6 +99,10 @@ void	Server::handleNewConnection() {
 			std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
 		}
 
+		User user;
+
+		user.setSocketFd( newFd );
+		addUser( user );
 	}
 }
 
@@ -120,13 +122,14 @@ void	Server::handleClientData( int clientSocket ) {
 	}
 	// we got some data from a client
 	std::string	command( buffer );
+
 	command.erase( --command.end() );
 	std::vector<std::string>	parameters;
-	std::istringstream			f( command );
-	std::string					string;
+  std::istringstream			f( command );
+  std::string					string;
 
-	while ( getline( f, string ) )
-		parameters.push_back( string );
+  while ( getline( f, string ) )
+    parameters.push_back( string );
 
 	for (std::vector<std::string>::iterator it = parameters.begin() ; it != parameters.end() ; it++ ) {
 		it->erase( it->find( '\r' ) );

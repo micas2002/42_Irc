@@ -75,7 +75,7 @@ void	Server::handleNewConnection() {
 	// handle new connections
 	socklen_t			sinSize;
 	int					newFd;
-	struct sockaddr_in6 theirAddr;
+	struct sockaddr_in6	theirAddr;
 	char 				ip6[INET6_ADDRSTRLEN];
 
 	sinSize = sizeof( struct sockaddr_storage );
@@ -96,10 +96,10 @@ void	Server::handleNewConnection() {
 			
 		inet_ntop( AF_INET6, &( theirAddr.sin6_addr ), ip6, INET6_ADDRSTRLEN );
 		std::cout << "Server: " << ip6 << " successfully connected to socket " << newFd << "." << std::endl;
+
 		std::ostringstream oss;
 		oss << "Default " << newFd;
-		std::string teste = oss.str();
-		User user(oss.str());
+		User user( oss.str() );
 		user.setSocketFd( newFd );
 		addUser( user );
 	}
@@ -124,11 +124,11 @@ void	Server::handleClientData( int clientSocket ) {
 
 	command.erase( --command.end() );
 	std::vector<std::string>	parameters;
-  std::istringstream			f( command );
-  std::string					string;
+	std::istringstream			f( command );
+	std::string					string;
 
-  while ( getline( f, string ) )
-    parameters.push_back( string );
+	while ( getline( f, string ) )
+		parameters.push_back( string );
 
 	for (std::vector<std::string>::iterator it = parameters.begin() ; it != --parameters.end() ; it++ ) {
 		it->erase( it->find( '\r' ) );

@@ -25,14 +25,14 @@ Server&	Server::operator=( const Server& assign ) {
 User*	Server::getUser( const std::string& nickname ) {
 	std::map< std::string, User >::iterator it = _users.find( nickname );
 	if ( it != _users.end() )
-		return ( &(it->second) );
+		return ( &( it->second ) );
 	return ( NULL );
 }
 
 User*	Server::getUser( int socketFd ){
 	std::map< int, User& >::iterator it = _usersBySocket.find( socketFd );
 	if ( it != _usersBySocket.end() )
-		return ( &(it->second) );
+		return ( &( it->second ) );
 	return ( NULL );
 }
 
@@ -47,8 +47,8 @@ void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
 void	Server::addUser( User user ) {
 	_users.insert( std::pair<std::string, User>( user.getNickname(), user ) );
 
-	User& user2 = _users.find( user.getNickname() )->second;
-	_usersBySocket.insert( std::pair<int, User&>( user2.getSocketFd(),  user2 ) );
+	User& userReference = _users.find( user.getNickname() )->second;
+	_usersBySocket.insert( std::pair<int, User&>( userReference.getSocketFd(),  userReference ) );
 }
 
 void	Server::addChannel( Channel& channel ) {
@@ -71,7 +71,7 @@ long	Server::simpleHash( std::string& command ) {
 	return ( hash );
 }
 
-bool	Server::checkIfPasswordsMatch(const std::string& input ) const {
+bool	Server::checkIfPasswordsMatch( const std::string& input ) const {
 	return ( _serverPassword.compare( input ) == 0 );
 }
 
@@ -103,15 +103,15 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 			break;
 
 		case PASS:
-			passCommand( userSocket, command);
+			passCommand( userSocket, command );
 			break;
 
 		case NICK:
-			nickCommand( userSocket, command);
+			nickCommand( userSocket, command );
 			break;
 
 		case USER:
-			userCommand( userSocket, command);
+			userCommand( userSocket, command );
 			break;
 
 		case PRIVMSG:
@@ -190,8 +190,8 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 }
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
-	Channel&		channel = _channels[channelName];
-	std::string&	key = channelsKeys.at( 0 );
+	Channel&			channel = _channels[channelName];
+	std::string&		key = channelsKeys.at( 0 );
 	const std::string&	channelPassword = channel.getPassword();
 
 	if ( channelPassword.empty() == false ) {
@@ -204,7 +204,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		// ERR_CHANNELISFULL 471
 		return ;
 	}
-	if ( channel.getInviteOnly() == true) {
+	if ( channel.getInviteOnly() == true ) {
 		if ( channel.isInvited( user ) == false ) {
 			// ERR_INVITEONLYCHAN 473
 			return ;
@@ -231,10 +231,10 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	}
 
 	std::vector<std::string>	parameters;
-    std::istringstream			f( command );
-    std::string					string;
+	std::istringstream			f( command );
+	std::string					string;
 
-    while ( getline( f, string, ' ' ) )
+	while ( getline( f, string, ' ' ) )
 		parameters.push_back( string );
 
 	if ( parameters.size() < 2 ) {
@@ -253,10 +253,10 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 
 void	Server::nickCommand( int userSocket, std::string& command ) {
 	std::vector<std::string>	parameters;
-    std::istringstream			f( command );
-    std::string					string;
+	std::istringstream			f( command );
+	std::string					string;
 
-    while ( getline( f, string, ' ' ) )
+	while ( getline( f, string, ' ' ) )
 		parameters.push_back( string );
 
 	if ( parameters.size() < 2 ) {
@@ -269,8 +269,8 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
 
 		User	newUser( *user );
-
 		newUser.setNickname( parameters.at( 1 ) );
+
 		removeUser( *user );
 		addUser( newUser );
 
@@ -284,15 +284,15 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	User* user = getUser( userSocket );
 
 	if ( user->getUsernameStatus() == true ) {
-		send (userSocket, "USER: You may not reregister\n", 23, 0);
+		send( userSocket, "USER: You may not reregister\n", 23, 0 );
 		return;
 	}
 	
 	std::vector<std::string>	parameters;
-    std::istringstream			f( command );
-    std::string					string;
+	std::istringstream			f( command );
+	std::string					string;
 
-    while ( getline( f, string, ' ' ) )
+	while ( getline( f, string, ' ' ) )
 		parameters.push_back( string );
 
 	if ( parameters.size() < 2 ) {
@@ -304,8 +304,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
 }
 
-void	Server::messageComand( int userSocket, std::string& command )
-{
+void	Server::messageComand( int userSocket, std::string& command ) {
 	User*				sender;
 	User*				recipient;
 	std::string			message;
@@ -318,7 +317,7 @@ void	Server::messageComand( int userSocket, std::string& command )
 		std::cout << "Recipient error" << std::endl;
 		return ;
 	}
-	if ( message.length() == 0)  {
+	if ( message.length() == 0 ) {
 		//implement error msg
 		std::cout << "Message error" << std::endl;
 		return ;
@@ -326,18 +325,17 @@ void	Server::messageComand( int userSocket, std::string& command )
 
 	std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
 	std::cout << server_message << std::endl;
-	send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0);
+	send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0 );
 }
 
-std::string	Server::extractNick( std::string& message )
-{
-	std::string::size_type	start = message.find(' ');
-	if (start != std::string::npos)
+std::string	Server::extractNick( std::string& message ) {
+	std::string::size_type	start = message.find( ' ' );
+	if ( start != std::string::npos )
 	{
 		start += 1;
-		std::string::size_type	end = message.find(' ', start);
-		if (end != std::string::npos)
-			return ( (message.substr( start, end - start )) );
+		std::string::size_type	end = message.find( ' ', start );
+		if ( end != std::string::npos )
+			return ( message.substr( start, end - start ) );
 	}
-	return "";
+	return ( "" );
 }

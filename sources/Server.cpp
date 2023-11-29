@@ -226,7 +226,7 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
 	
 	if ( user->getPasswordStatus() == true ) {
-		send ( userSocket, "PASS: You may not reregister\n", 23, 0);
+		send ( userSocket, "PASS: You may not reregister\n", 29, 0);
 		return;
 	}
 
@@ -238,7 +238,7 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 		parameters.push_back( string );
 
 	if ( parameters.size() < 2 ) {
-		send( userSocket, "PASS: Not enough parameters\n", 35, 0 );
+		send( userSocket, "PASS: Not enough parameters\n", 28, 0 );
 		return;
 	}
 
@@ -284,7 +284,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	User* user = getUser( userSocket );
 
 	if ( user->getUsernameStatus() == true ) {
-		send( userSocket, "USER: You may not reregister\n", 23, 0 );
+		send( userSocket, "USER: You may not reregister\n", 29, 0 );
 		return;
 	}
 	

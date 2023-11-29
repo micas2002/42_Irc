@@ -122,7 +122,7 @@ void	Server::handleClientData( int clientSocket ) {
 	// we got some data from a client
 	std::string	command( buffer );
 
-	command.erase( --command.end() );
+	// command.erase( --command.end() );
 	std::vector<std::string>	parameters;
 	std::istringstream			f( command );
 	std::string					string;
@@ -130,7 +130,7 @@ void	Server::handleClientData( int clientSocket ) {
 	while ( getline( f, string ) )
 		parameters.push_back( string );
 
-	for (std::vector<std::string>::iterator it = parameters.begin() ; it != --parameters.end() ; it++ ) {
+	for (std::vector<std::string>::iterator it = parameters.begin() ; it != parameters.end() ; it++ ) {
 		it->erase( it->find( '\r' ) );
 		selectCommand( clientSocket, *it );
 	}

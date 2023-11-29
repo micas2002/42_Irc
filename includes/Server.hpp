@@ -95,7 +95,7 @@ class Server
 		void		messageComand( int userSocket, std::string& command );
 		std::string	extractNick( std::string& message );
  
-    void	passCommand( int userSocket, std::string& command );
+    	void	passCommand( int userSocket, std::string& command );
 		void	nickCommand( int userSocket, std::string& command );
 		void	userCommand( int userSocket, std::string& command );
 

@@ -40,6 +40,13 @@ const std::string&	Server::getServerPassword() const { return ( _serverPassword 
 
 const std::string&	Server::getServerPort() const { return ( _serverPort ); }
 
+Channel*	Server::getChannel( std::string channel ) {
+	std::map< std::string, Channel >::iterator it = _channels.find(channel);
+	if ( it != _channels.end() )
+		return ( &( it->second ) );
+	return ( NULL );
+}
+
 void	Server::setServerPassword( const std::string& password) { _serverPassword = password; }
 
 void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
@@ -308,25 +315,38 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 
 void	Server::messageComand( int userSocket, std::string& command ) {
 	User*				sender;
-	User*				recipient;
+	std::string			recipient_name;
 	std::string			message;
 
 	message = command.substr( command.find( ':' ) + 1 );
-	sender = getUser( userSocket );
-	recipient = getUser( extractNick( command ) );
-	if ( recipient == NULL ) {
-		// Implement error msg
-		std::cout << "Recipient error" << std::endl;
-		return ;
-	}
 	if ( message.length() == 0 ) {
 		//implement error msg
 		std::cout << "Message error" << std::endl;
 		return ;
 	}
+	sender = getUser( userSocket );
+	recipient_name = extractNick( command );
+	if ( recipient_name.find('#') != std::string::npos ) {
+		Channel*	recipient = getChannel( recipient_name );
+		if ( recipient == NULL ) {
+			// Implement error msg
+			std::cout << "Recipient channel error" << std::endl;
+			return ;
+		}
 
-	std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
-	send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0 );
+		std::string	serverMessage( sender->getMessagePrefix() + "PRIVMSG " + recipient_name + " :" + message + "\r\n" );
+		recipient->sendMessage( serverMessage, sender->getNickname() );
+	}
+	else {
+		User*	recipient = getUser( recipient_name );
+		if ( recipient == NULL ) {
+			// Implement error msg
+			std::cout << "Recipient user error" << std::endl;
+			return ;
+		}
+		std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
+		send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0 );
+	}
 }
 
 std::string	Server::extractNick( std::string& message ) {

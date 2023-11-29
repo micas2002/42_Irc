@@ -50,17 +50,25 @@ void	Channel::setTopic( std::string topic ) { _topic = topic; }
 void	Channel::setUserLimit( int userLimit ) { _userLimit = userLimit; }
 
 void	Channel::addUser( User* newUser ) { 
-	_users.insert( std::pair<std::string, User*>( ( newUser->getUsername() ), newUser ) ); 
+	_users.insert( std::pair<std::string, User*>( ( newUser->getNickname() ), newUser ) ); 
 }
 
 void	Channel::addOperator( User* newOperator ) { 
-	_users.insert( std::pair<std::string, User*>( ( newOperator->getUsername() ), newOperator ) );
+	_users.insert( std::pair<std::string, User*>( ( newOperator->getNickname() ), newOperator ) );
 }
 
 void	Channel::addInvite( User* newInvite ) { 
-	_users.insert( std::pair<std::string, User*>( ( newInvite->getUsername() ), newInvite ) ); 
+	_users.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
 }
 
 void	Channel::ejectUser( User* user ) { _users.erase( user->getUsername() ); }
 void	Channel::ejectOperator( User* user ) { _operators.erase( user->getUsername() ); }
 void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getUsername() ); }
+
+void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) {
+	for ( std::map<std::string, User*>::iterator it = _users.begin(); it != _users.end(); it++ ) {
+		if ( it->first == senderNick )
+			continue;
+		send( it->second->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
+	}
+}

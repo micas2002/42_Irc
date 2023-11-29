@@ -56,6 +56,9 @@ class Channel {
 		void	ejectOperator(User* user);
 		void	removeInvite(User* invite);
 
+		//Functions
+		void	sendMessage( std::string serverMessage, std::string senderNick );
+
 
 
 	private:

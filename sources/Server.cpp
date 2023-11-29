@@ -119,8 +119,8 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 			break;
 		
 		default:
-			std::cout << simpleHash( command ) << std::endl;
-			std::cout << command << std::endl;
+			std::cout << "HASH: " << simpleHash( command ) << std::endl;
+			std::cout << "COMMAND: " << command << std::endl;
 			break;
 	}
 }
@@ -264,14 +264,16 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		return;
 	}
 
-	User* user = getUser( userSocket );
+	User& user = *getUser( userSocket );
+
+	user.setNickname("ola mano");
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
 
-		User	newUser( *user );
+		User	newUser( user );
 		newUser.setNickname( parameters.at( 1 ) );
 
-		removeUser( *user );
+		removeUser( user );
 		addUser( newUser );
 
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
@@ -324,7 +326,6 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 	}
 
 	std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
-	std::cout << server_message << std::endl;
 	send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0 );
 }
 

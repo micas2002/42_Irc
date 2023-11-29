@@ -19,6 +19,7 @@ User::User( const User& copy ) {
 	_isAuthenticated = copy._isAuthenticated;
 }
 
+/*	DO NOT TOUCH	*/
 User::~User() {}
 
 User&	User::operator=( const User& copy ) {

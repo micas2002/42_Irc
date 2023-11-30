@@ -135,11 +135,8 @@ void Server::handleClientData(int clientSocket)
 
 	// command.erase( --command.end() );
 	std::vector<std::string> parameters;
-	std::istringstream f(command);
-	std::string string;
 
-	while (getline(f, string))
-		parameters.push_back(string);
+	parameters = splitByCharacter( command ,  '\n' );
 
 	for (std::vector<std::string>::iterator it = parameters.begin(); it != parameters.end(); it++)
 	{

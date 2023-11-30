@@ -126,8 +126,6 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 
 	User& user = *getUser( userSocket );
 
-	// user.setNickname("ola mano");
-
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
 
 		User	newUser( user );
@@ -160,6 +158,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	}
 
 	user->setUsername( parameters.at( 1 ) );
+	user->setUsernameStatusTrue();
 	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
 }
 

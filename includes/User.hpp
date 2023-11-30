@@ -15,7 +15,7 @@ class User
 		~User();
 
 		// Operators
-		User&	operator = (const User& assiign);
+		User&				operator = (const User& assiign);
 
 		//Getters
 		const std::string&	getNickname() const;
@@ -26,26 +26,26 @@ class User
 		bool				getNicknameStatus() const;
 		bool				getIsAuthenticated() const;
 
-		std::string		getMessagePrefix() const;
-
+		std::string			getMessagePrefix() const;
 
 		// Setters
-		void	setNickname( const std::string& nickname );
-		void	setUsername( const std::string& username );
-		void	setSocketFd( const int socketFd );
-		void	setPasswordStatusTrue();
-		void	setUsernameStatusTrue();
-		void	setNicknameStatusTrue();
-		void	setIsAuthenticatedTrue();
+		void				setNickname( const std::string& nickname );
+		void				setUsername( const std::string& username );
+		void				setSocketFd( const int socketFd );
+		void				setPasswordStatusTrue();
+		void				setUsernameStatusTrue();
+		void				setNicknameStatusTrue();
+		void				setIsAuthenticatedTrue();
 
-		bool	userFieldsEmpty();
+		bool				userFieldsEmpty();
 	
 	private:
-		std::string	_nickname;
-		std::string	_username;
-		int			_socketFd;
-		bool		_passwordStatus;
-		bool		_usernameStatus;
-		bool		_nicknameStatus;
-		bool		_isAuthenticated;
+		std::string			_nickname;
+		std::string			_username;
+		int					_socketFd;
+
+		bool				_passwordStatus;
+		bool				_usernameStatus;
+		bool				_nicknameStatus;
+		bool				_isAuthenticated;
 };

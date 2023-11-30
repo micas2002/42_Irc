@@ -31,46 +31,43 @@ class Channel {
 		~Channel();
 
 		// Operators
-		Channel&	operator = ( const Channel& assign );
+		Channel&						operator = ( const Channel& assign );
 
 		//Gettters
-		const std::string&	getPassword() const;
-		const std::string&	getName() const;
-		const std::string&	getTopic() const;
-		int					getUserLimit() const;
-		int					getUserCount() const;
-		bool				getInviteOnly() const;
-		bool				isInvited( User* user ) const;
-
+		const std::string&				getPassword() const;
+		const std::string&				getName() const;
+		const std::string&				getTopic() const;
+		int								getUserLimit() const;
+		int								getUserCount() const;
+		bool							getInviteOnly() const;
+		bool							isInvited( User* user ) const;
 
 		//Setters
-		void	setPassword( std::string password );
-		void	setTopic( std::string topic );
-		void	setUserLimit( int userLimit );
-		void	addUser( User* newUser );
-		void	addOperator( User* newOperator );
-		void	addInvite( User* newInvite);
+		void							setPassword( std::string password );
+		void							setTopic( std::string topic );
+		void							setUserLimit( int userLimit );
+		void							addUser( User* newUser );
+		void							addOperator( User* newOperator );
+		void							addInvite( User* newInvite);
 
 		//Removers
-		void	ejectUser(User* user);
-		void	ejectOperator(User* user);
-		void	removeInvite(User* invite);
+		void							ejectUser(User* user);
+		void							ejectOperator(User* user);
+		void							removeInvite(User* invite);
 
 		//Functions
-		void	sendMessage( std::string serverMessage, std::string senderNick );
-
-
+		void							sendMessage( std::string serverMessage, std::string senderNick );
 
 	private:
-		const std::string						_name;
-		std::string								_channelPassword;
-		std::string								_topic;
-		int										_userLimit;
-		bool									_inviteOnly;
-		bool									_topicRestriction;
+		const std::string				_name;
+		std::string						_channelPassword;
+		std::string						_topic;
+		int								_userLimit;
+		bool							_inviteOnly;
+		bool							_topicRestriction;
 
-		std::map<std::string, User*>			_users;
-		std::map<std::string, User*>			_operators;
-		std::map<std::string, User*>			_inviteList;
+		std::map<std::string, User*>	_users;
+		std::map<std::string, User*>	_operators;
+		std::map<std::string, User*>	_inviteList;
 		
 };

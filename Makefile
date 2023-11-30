@@ -4,7 +4,7 @@ HEADERS_LIST = Server.hpp User.hpp Channel.hpp
 HEADERS_DIRECTORY = ./includes/
 HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 
-SOURCES_LIST = main.cpp Server.cpp User.cpp Channel.cpp Sockets.cpp
+SOURCES_LIST = main.cpp Server.cpp User.cpp Channel.cpp Sockets.cpp Commands.cpp
 SOURCES_DIRECTORY = ./sources/
 SOURCES = $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_LIST))
 

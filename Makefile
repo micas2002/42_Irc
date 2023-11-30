@@ -13,7 +13,7 @@ OBJECTS_DIRECTORY = objects/
 OBJECTS = $(addprefix $(OBJECTS_DIRECTORY), $(OBJECTS_LIST))
 
 CC = c++
-FLAGS = -Wall -Werror -Wextra -Wshadow -std=c++98 -g3
+FLAGS = -Wall -Werror -Wextra -Wshadow -std=c++98 -g3 -fsanitize=address
 
 INCLUDES = -I $(HEADERS_DIRECTORY)
 

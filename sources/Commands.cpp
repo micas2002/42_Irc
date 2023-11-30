@@ -1,6 +1,7 @@
 #include "Server.hpp"
 
 // Join command
+
 void	Server::joinCommand( int userSocket, std::string& command ) {
 	std::vector<std::string>	parameters;
 	std::vector<std::string>	channelsKeys;
@@ -8,7 +9,7 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 	std::string					channelKey;
 	User*						user = getUser( userSocket );
 
-	parameters = getParameters( command );
+	parameters = splitByCharacter( command, ' ' );
 	if ( parameters.size() < 2 ) {
 		// ERR_NEEDMOREPARAMS 461
 		return ;
@@ -34,17 +35,6 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 		else 
 			addUserToChannel( channelName, user, channelsKeys );
 	}
-}
-
-std::vector<std::string>	Server::getParameters( std::string& command ) {
-	std::vector<std::string>	parameters;
-	std::istringstream			commandStream( command );
-	std::string					tempString;
-
-	while ( getline( commandStream, tempString, ' ') )
-		parameters.push_back( tempString );
-	
-	return ( parameters );
 }
 
 bool	Server::isValidChannelName( std::string& channelName ) {
@@ -98,7 +88,6 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 	send ( user->getSocketFd(), joinMessage.c_str(), joinMessage.length(), 0 );
 }
 
-// Pass command
 void	Server::passCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
 	
@@ -108,11 +97,8 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	}
 
 	std::vector<std::string>	parameters;
-	std::istringstream			f( command );
-	std::string					string;
 
-	while ( getline( f, string, ' ' ) )
-		parameters.push_back( string );
+	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
 		send( userSocket, "PASS: Not enough parameters\n", 28, 0 );
@@ -128,28 +114,26 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
 }
 
-// Nick command
 void	Server::nickCommand( int userSocket, std::string& command ) {
 	std::vector<std::string>	parameters;
-	std::istringstream			f( command );
-	std::string					string;
-
-	while ( getline( f, string, ' ' ) )
-		parameters.push_back( string );
+	
+	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
 		send( userSocket, "NICK: No nickname given\n", 24, 0 );
 		return;
 	}
 
-	User* user = getUser( userSocket );
+	User& user = *getUser( userSocket );
+
+	// user.setNickname("ola mano");
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
 
-		User	newUser( *user );
+		User	newUser( user );
 		newUser.setNickname( parameters.at( 1 ) );
 
-		removeUser( *user );
+		removeUser( user );
 		addUser( newUser );
 
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
@@ -158,7 +142,6 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		send( userSocket, SERVER_NICKNAME_ALREADY_IN_USE, 74, 0 );
 }
 
-// User command
 void	Server::userCommand( int userSocket, std::string& command ) {
 	User* user = getUser( userSocket );
 
@@ -168,11 +151,8 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	}
 	
 	std::vector<std::string>	parameters;
-	std::istringstream			f( command );
-	std::string					string;
-
-	while ( getline( f, string, ' ' ) )
-		parameters.push_back( string );
+	
+	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
 		send( userSocket, "USER: No username given\n", 24, 0 );
@@ -183,29 +163,40 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
 }
 
-// Message comand
 void	Server::messageComand( int userSocket, std::string& command ) {
 	User*				sender;
-	User*				recipient;
+	std::string			recipient_name;
 	std::string			message;
 
 	message = command.substr( command.find( ':' ) + 1 );
-	sender = getUser( userSocket );
-	recipient = getUser( extractNick( command ) );
-	if ( recipient == NULL ) {
-		// Implement error msg
-		std::cout << "Recipient error" << std::endl;
-		return ;
-	}
 	if ( message.length() == 0 ) {
 		//implement error msg
 		std::cout << "Message error" << std::endl;
 		return ;
 	}
+	sender = getUser( userSocket );
+	recipient_name = extractNick( command );
+	if ( recipient_name.find('#') != std::string::npos ) {
+		Channel*	recipient = getChannel( recipient_name );
+		if ( recipient == NULL ) {
+			// Implement error msg
+			std::cout << "Recipient channel error" << std::endl;
+			return ;
+		}
 
-	std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
-	std::cout << server_message << std::endl;
-	send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0 );
+		std::string	serverMessage( sender->getMessagePrefix() + "PRIVMSG " + recipient_name + " :" + message + "\r\n" );
+		recipient->sendMessage( serverMessage, sender->getNickname() );
+	}
+	else {
+		User*	recipient = getUser( recipient_name );
+		if ( recipient == NULL ) {
+			// Implement error msg
+			std::cout << "Recipient user error" << std::endl;
+			return ;
+		}
+		std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
+		send( recipient->getSocketFd(), server_message.c_str(), server_message.size(), 0 );
+	}
 }
 
 std::string	Server::extractNick( std::string& message ) {
@@ -219,3 +210,4 @@ std::string	Server::extractNick( std::string& message ) {
 	}
 	return ( "" );
 }
+

@@ -70,6 +70,8 @@ class Server
 		// Removers
 		void	removeUser( User& user );
 
+		std::vector<std::string>	splitByCharacter( const std::string& input, char c );
+
 		// Simple Hash Function
 		long	simpleHash( std::string& command );
 

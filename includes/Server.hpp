@@ -58,6 +58,7 @@ class Server
 		User*				getUser( int socketFd );
 		const std::string&	getServerPassword() const;
 		const std::string&	getServerPort() const;
+		Channel*			getChannel( std::string channel );
 
 		//Setters
 		void	setServerPassword( const std::string& password );
@@ -101,7 +102,7 @@ class Server
 
 	private:
 		std::map<std::string, User>		_users;
-		std::map<int, User&>				_usersBySocket;
+		std::map<int, User&>			_usersBySocket;
 		std::map<std::string, Channel>	_channels;
 		std::string						_serverPassword;
 		std::string						_serverPort;

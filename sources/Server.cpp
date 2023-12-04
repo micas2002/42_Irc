@@ -29,11 +29,8 @@ User*	Server::getUser( const std::string& nickname ) {
 	return ( NULL );
 }
 
-User*	Server::getUser( int socketFd ){
-	std::map< int, User& >::iterator it = _usersBySocket.find( socketFd );
-	if ( it != _usersBySocket.end() )
-		return ( &( it->second ) );
-	return ( NULL );
+User*	Server::getUser( int socketFd ) {
+	return ( getUser( _usersBySocket[ socketFd ] ) );
 }
 
 const std::string&	Server::getServerPassword() const { return ( _serverPassword ); }
@@ -54,8 +51,7 @@ void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
 void	Server::addUser( User user ) {
 	_users.insert( std::pair<std::string, User>( user.getNickname(), user ) );
 
-	User& userReference = _users.find( user.getNickname() )->second;
-	_usersBySocket.insert( std::pair<int, User&>( userReference.getSocketFd(),  userReference ) );
+	_usersBySocket.insert( std::pair<int, std::string>( user.getSocketFd(),  user.getNickname() ) );
 }
 
 void	Server::addChannel( Channel& channel ) {

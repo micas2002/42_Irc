@@ -102,7 +102,7 @@ class Server
 
 	private:
 		std::map<std::string, User>		_users;
-		std::map<int, User&>			_usersBySocket;
+		std::map<int, std::string>		_usersBySocket;
 		std::map<std::string, Channel>	_channels;
 		std::string						_serverPassword;
 		std::string						_serverPort;

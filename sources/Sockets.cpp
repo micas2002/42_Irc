@@ -98,6 +98,7 @@ void Server::handleNewConnection() {
 		oss << "Default " << newFd;
 		User user( oss.str() );
 		user.setSocketFd( newFd );
+		user.setIp( std::string( ip6 ) );
 		addUser( user );
 	}
 }

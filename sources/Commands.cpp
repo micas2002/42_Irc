@@ -177,17 +177,15 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 }
 
 void	Server::messageComand( int userSocket, std::string& command ) {
-	User*				sender;
+	User*				sender = getUser( userSocket );
 	std::string			recipient_name;
 	std::string			message;
-
-	sender = getUser( userSocket );
 
 	if ( sender->getIsAuthenticated() == false ) {
 		send( sender->getSocketFd(), "Server: You must register first\n", 32, 0 );
 		return;
 	}
-	
+
 	message = command.substr( command.find( ':' ) + 1 );
 	if ( message.length() == 0 ) {
 		//implement error msg
@@ -230,3 +228,32 @@ std::string	Server::extractNick( std::string& message ) {
 	return ( "" );
 }
 
+void	Server::kickCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+
+	if ( user->getIsAuthenticated() == false ) {
+		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		return;
+	}
+
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	if ( parameters.size() < 3 ) {
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), "KICK");
+		return;
+	}
+
+	if ( _channels.find( parameters.at( 1 ) ) == _channels.end()) {
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	// TODO: finish error management and create missing getters from Channel class
+	//Channel*	channel = Channel::getChannel();
+
+	// if ( _channels[parameters.at( 1 )]._operators.find( user->getNickname() ) == _channels[parameters.at( 1 )]._operators.end() ) {
+
+	// }
+}

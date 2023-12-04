@@ -9,6 +9,11 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 	std::string					channelKey;
 	User*						user = getUser( userSocket );
 
+	if ( user->getIsAuthenticated() == false ) {
+		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		return;
+	}
+
 	parameters = splitByCharacter( command, ' ' );
 	if ( parameters.size() < 2 ) {
 		// ERR_NEEDMOREPARAMS 461
@@ -111,6 +116,8 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 		return;
 	}
 	user->setPasswordStatusTrue();
+	if ( user->getNicknameStatus() == true && user->getUsernameStatus() == true )
+		user->setIsAuthenticatedTrue();
 	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
 }
 
@@ -133,6 +140,11 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 
 		removeUser( user );
 		addUser( newUser );
+
+		if ( newUser.getNicknameStatus() == false && newUser.getUsernameStatus() == true
+			&& newUser.getPasswordStatus() == true )
+			newUser.setIsAuthenticatedTrue();
+		newUser.setNicknameStatusTrue();
 
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
 	}
@@ -159,6 +171,8 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 
 	user->setUsername( parameters.at( 1 ) );
 	user->setUsernameStatusTrue();
+	if ( user->getNicknameStatus() == true && user->getPasswordStatus() == true )
+		user->setIsAuthenticatedTrue();
 	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
 }
 
@@ -167,13 +181,19 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 	std::string			recipient_name;
 	std::string			message;
 
+	sender = getUser( userSocket );
+
+	if ( sender->getIsAuthenticated() == false ) {
+		send( sender->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		return;
+	}
+	
 	message = command.substr( command.find( ':' ) + 1 );
 	if ( message.length() == 0 ) {
 		//implement error msg
 		std::cout << "Message error" << std::endl;
 		return ;
 	}
-	sender = getUser( userSocket );
 	recipient_name = extractNick( command );
 	if ( recipient_name.find('#') != std::string::npos ) {
 		Channel*	recipient = getChannel( recipient_name );

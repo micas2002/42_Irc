@@ -23,7 +23,7 @@ void Server::createAndBindSocket() {
 			continue;
 		}
 
-		if (setsockopt( _serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof( int ) ) == -1 ) {
+		if ( setsockopt( _serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof( int ) ) == -1 ) {
 			std::perror( "setsockopt" );
 			exit( 1 );
 		}

@@ -42,6 +42,8 @@ const std::string&	User::getUsername() const { return ( _username ); }
 	
 int	User::getSocketFd() const { return ( _socketFd ); }
 
+const std::string&	User::getIp() const { return ( _ip ); }
+
 bool	User::getPasswordStatus() const { return ( _passwordStatus ); }
 
 bool	User::getUsernameStatus() const { return ( _usernameStatus ); }
@@ -56,6 +58,8 @@ void	User::setNickname( const std::string& nickname ) { _nickname = nickname; }
 void	User::setUsername( const std::string& username ) { _username = username; }
 
 void	User::setSocketFd( const int socketFd ) { _socketFd = socketFd; }
+
+void	User::setIp( const std::string& ip ) { _ip = ip; }
 
 void	User::setPasswordStatusTrue() { _passwordStatus = true; }
 

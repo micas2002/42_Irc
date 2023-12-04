@@ -12,8 +12,19 @@
 
 class ServerMessages {
 	public:
+		// ERRORS
 		// ERR_BADCHANNELKEY 475
-		static void		sendError475( const int socketFd, const std::string& channelName, const std::string& clientName );
+		static void		ERR_BADCHANNELKEY( const int socketFd, const std::string& channelName, const std::string& clientName );
+
+		// ERR_NEEDMOREPARAMS 461
+		static void 	ERR_NEEDMOREPARAMS( const int socketFD, const std::string& clientName,  const std::string& commandName );
+
+		// REPLIES
+		// RPL_ENDOFWHO 315
+		static void		RPL_ENDOFWHO( const int socketFd, const std::string& clientName, const std::string& mask );
+
+		// RPL_WHOREPLY 352
+		static void		RPL_WHOREPLY( const int socketFd, const User* user, const std::string& channelName );
 
 
 	private:

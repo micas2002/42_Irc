@@ -23,14 +23,17 @@ Server&	Server::operator=( const Server& assign ) {
 }
 
 User*	Server::getUser( const std::string& nickname ) {
-	std::map< std::string, User >::iterator it = _users.find( nickname );
+	std::map<std::string, User>::iterator it = _users.find( nickname );
 	if ( it != _users.end() )
 		return ( &( it->second ) );
 	return ( NULL );
 }
 
 User*	Server::getUser( int socketFd ) {
-	return ( getUser( _usersBySocket[ socketFd ] ) );
+	std::map<int, std::string>::iterator it = _usersBySocket.find( socketFd );
+	if ( it != _usersBySocket.end() )
+		return ( getUser( _usersBySocket[ socketFd ] ) );
+	return ( NULL );
 }
 
 const std::string&	Server::getServerPassword() const { return ( _serverPassword ); }

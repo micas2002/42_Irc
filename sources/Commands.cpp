@@ -264,7 +264,11 @@ void	Server::whoChannel( int userSocket, const std::string& channelName ) {
 }
 
 void	Server::whoUser( int userSocket, const std::string& username ) {
-	(void)userSocket;
-	(void)username;
-	//TODO: implement
+	User* user = getUser( userSocket );
+	User* target = getUser( username );
+
+	if ( target != NULL) {
+		ServerMessages::RPL_WHOREPLY( userSocket, target, username ); // RPL_WHOREPLY 352
+	}
+		ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), username ); // RPL_ENDOFWHO 315
 }

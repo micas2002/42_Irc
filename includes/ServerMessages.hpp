@@ -2,29 +2,23 @@
 
 #include <iostream>
 #include <sys/socket.h>
-
-// Colors
-#define RESET   "\033[0m"
-#define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
-#define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
-#define BOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
-#define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
+#include "User.hpp"
 
 class ServerMessages {
 	public:
 		// ERRORS
 		// ERR_BADCHANNELKEY 475
-		static void		ERR_BADCHANNELKEY( const int socketFd, const std::string& channelName, const std::string& clientName );
+		static void		ERR_BADCHANNELKEY( int socketFd, const std::string& channelName, const std::string& clientName );
 
 		// ERR_NEEDMOREPARAMS 461
-		static void 	ERR_NEEDMOREPARAMS( const int socketFD, const std::string& clientName,  const std::string& commandName );
+		static void 	ERR_NEEDMOREPARAMS( int socketFD, const std::string& clientName, const std::string& commandName );
 
 		// REPLIES
 		// RPL_ENDOFWHO 315
-		static void		RPL_ENDOFWHO( const int socketFd, const std::string& clientName, const std::string& mask );
+		static void		RPL_ENDOFWHO( int socketFd, const std::string& clientName, const std::string& mask );
 
 		// RPL_WHOREPLY 352
-		static void		RPL_WHOREPLY( const int socketFd, const User* user, const std::string& channelName );
+		static void		RPL_WHOREPLY( int socketFd, User* user, const std::string& target );
 
 
 	private:

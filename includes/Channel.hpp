@@ -31,7 +31,7 @@ class Channel {
 		~Channel();
 
 		// Operators
-		Channel&						operator = ( const Channel& assign );
+		Channel&								operator = ( const Channel& assign );
 
 		//Gettters
 		const std::string&						getPassword() const;

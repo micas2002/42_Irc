@@ -32,9 +32,9 @@ void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, 
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
-void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& target ) {
-	std::string message( "Tijolinhos 352 " + user->getNickname() + " " + target + " " + user->getUsername() \
-		 + " " + user->getIp() + " Tijolinhos " + user->getNickname() + " H :0 realname\r\n" );
+void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& sender, const std::string& target ) {
+	std::string message( "Tijolinhos 352 " + sender + " " + target + " " + user->getUsername() \
+		+ " " + user->getIp() + " Tijolinhos " + user->getNickname() + " H :0 realname\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
 }

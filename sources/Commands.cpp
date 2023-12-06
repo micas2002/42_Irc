@@ -9,6 +9,11 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 	std::string					channelKey;
 	User*						user = getUser( userSocket );
 
+	if ( user->getIsAuthenticated() == false ) {
+		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		return;
+	}
+
 	parameters = splitByCharacter( command, ' ' );
 	if ( parameters.size() < 2 ) {
 		// ERR_NEEDMOREPARAMS 461
@@ -118,6 +123,10 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 		return;
 	}
 	user->setPasswordStatusTrue();
+	if ( user->getNicknameStatus() == true && user->getUsernameStatus() == true ) {
+		std::cout << "here\n";
+		user->setIsAuthenticatedTrue();
+	}
 	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
 }
 
@@ -132,15 +141,16 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		return;
 	}
 
-	User& user = *getUser( userSocket );
+	User* user = getUser( userSocket );
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
 
-		User	newUser( user );
-		newUser.setNickname( parameters.at( 1 ) );
-
-		removeUser( user );
-		addUser( newUser );
+		user->setNickname( parameters.at( 1 ) );
+		if ( user->getNicknameStatus() == false && user->getUsernameStatus() == true
+			&& user->getPasswordStatus() == true ) {
+				user->setIsAuthenticatedTrue();
+		}
+		user->setNicknameStatusTrue();
 
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
 	}
@@ -168,14 +178,22 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 
 	user->setUsername( parameters.at( 1 ) );
 	user->setUsernameStatusTrue();
+	if ( user->getNicknameStatus() == true && user->getPasswordStatus() == true ) {
+		user->setIsAuthenticatedTrue();
+	}
 	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
 }
 
 // MESSAGE command
 void	Server::messageComand( int userSocket, std::string& command ) {
-	User*				sender;
+	User*				sender = getUser( userSocket );
 	std::string			recipient_name;
 	std::string			message;
+
+	if ( sender->getIsAuthenticated() == false ) {
+		send( sender->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		return;
+	}
 
 	message = command.substr( command.find( ':' ) + 1 );
 	if ( message.length() == 0 ) {
@@ -183,7 +201,6 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 		std::cout << "Message error" << std::endl;
 		return ;
 	}
-	sender = getUser( userSocket );
 	recipient_name = extractNick( command );
 	if ( recipient_name.find('#') != std::string::npos ) {
 		Channel*	recipient = getChannel( recipient_name );
@@ -218,6 +235,50 @@ std::string	Server::extractNick( std::string& message ) {
 			return ( message.substr( start, end - start ) );
 	}
 	return ( "" );
+}
+
+void	Server::kickCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+
+	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
+		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		return;
+	}
+
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	if ( parameters.size() < 3 ) { // Checks number of parameters given to the command
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), "KICK");
+		return;
+	}
+
+	if ( _channels.find( parameters.at( 1 ) ) == _channels.end()) { // Checks if channel exists
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	Channel*	channel = getChannel( parameters.at( 1 ) );
+
+	if ( channel->getUser( user->getNickname() ) == NULL ) { // Checks if user executing command is on the channel
+		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	if ( channel->getOperator( user->getNickname() ) == NULL ) { // Checks if user executing command is operator in channel
+		ServerMessages::ERR_CHANOPRIVSNEEDED( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	User*	target = channel->getUser( parameters.at( 2 ) );
+
+	if ( target == NULL ) { // Checks if target user is on the channel
+		ServerMessages::ERR_USERNOTINCHANNEL( userSocket, user->getNickname(), parameters.at( 2 ), parameters.at( 1 ) );
+		return;
+	}
+
+	channel->ejectUser( target );
 }
 
 // WHO command

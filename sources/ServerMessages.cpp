@@ -12,15 +12,56 @@ ServerMessages&	ServerMessages::operator = ( const ServerMessages& assign ) {
 	return ( *this );
 }
 
-// ERRORS
-void	ServerMessages::ERR_BADCHANNELKEY( int socketFd, const std::string& channelName, const std::string& clientName ) {
-	std::string	message( "Tijolinhos 475 " + clientName + " " + channelName + " :Cannot join channel (+k)\r\n" );
+void	ServerMessages::ERR_NOSUCHCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " " + channelName + " :No such channel\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
-void	ServerMessages::ERR_NEEDMOREPARAMS( int socketFd, const std::string& clientName, const std::string& commandName ) {
-	std::string	message( "Tijolinhos 461 " + clientName + " " + commandName + " :Not enough parameters\r\n" );
+void	ServerMessages::ERR_NONICKNAMEGIVEN( const int socketFd, const std::string& clientName ) {
+	std::string	message( "Tijolinhos 475 " + clientName  + " :No nickname given\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_NICKNAMEINUSE( const int socketFd, const std::string& clientName, const std::string& nick ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " " + nick + " :Nickname is already in use\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_USERNOTINCHANNEL( const int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " " + nick + " " + channelName + " :They aren't on that channel\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_NOTONCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " " + channelName + " :You're not on that channel\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_NEEDMOREPARAMS( const int socketFd, const std::string& clientName, const std::string& command ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " " + command + " :Not enough parameters\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_ALREADYREGISTERED( const int socketFd, const std::string& clientName ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " :You may not reregister\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_PASSWDMISMATCH( const int socketFd, const std::string& clientName ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " :Password incorrect\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_BADCHANNELKEY( const int socketFd, const std::string& clientName, const std::string& channelName ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " " + channelName + " :Cannot join channel (+k)\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
@@ -35,6 +76,12 @@ void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, 
 void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& sender, const std::string& target ) {
 	std::string message( "Tijolinhos 352 " + sender + " " + target + " " + user->getUsername() \
 		+ " " + user->getIp() + " Tijolinhos " + user->getNickname() + " H :0 realname\r\n" );
+
+  send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::ERR_CHANOPRIVSNEEDED( const int socketFd, const std::string& clientName, const std::string& channelName ) {
+	std::string	message( "Tijolinhos 475 " + clientName + " " + channelName + " :You're not channel operator\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
 }

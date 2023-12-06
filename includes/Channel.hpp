@@ -37,6 +37,8 @@ class Channel {
 		const std::string&						getPassword() const;
 		const std::string&						getName() const;
 		const std::string&						getTopic() const;
+  	User*							getUser( const std::string& nickname );
+		User*							getOperator( const std::string& nickname );
 		const std::map<std::string, User*>&		getUsers() const;
 		const std::map<std::string, User*>&		getOperators() const;
 		const std::map<std::string, User*>&		getInvites() const;

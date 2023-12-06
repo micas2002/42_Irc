@@ -37,6 +37,20 @@ const std::map<std::string, User*>&	Channel::getOperators() const { return ( _op
 
 const std::map<std::string, User*>&	Channel::getInvites() const { return ( _inviteList ); }
 
+User*	Channel::getUser( const std::string& nickname ) {
+	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
+	if ( it != _operators.end() )
+		return ( it->second );
+	return ( NULL );
+}
+
+User*	Channel::getOperator( const std::string& nickname ) {
+	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
+	if ( it != _operators.end() )
+		return ( it->second );
+	return ( NULL );
+}
+
 int		Channel::getUserLimit() const { return ( _userLimit ); }
 
 int		Channel::getUserCount() const { return ( _users.size() ); }

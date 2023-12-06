@@ -224,10 +224,11 @@ std::string	Server::extractNick( std::string& message ) {
 void	Server::whoCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
 
-	if ( user->getIsAuthenticated() == false ) {
-		send( userSocket, "Server: You must first register/r/n", 33, 0 );
-		return ;
-	}
+	
+	// if ( user->getIsAuthenticated() == false ) {
+	// 	send( userSocket, "Server: You must first register/r/n", 33, 0 );
+	// 	return ;
+	// }
 
 	std::vector<std::string>	parameters;
 	parameters = splitByCharacter( command, ' ' );
@@ -258,7 +259,7 @@ void	Server::whoChannel( int userSocket, const std::string& channelName ) {
 	const std::map<std::string, User*>&	users = channel->getUsers();
 	std::map<std::string, User*>::const_iterator	iter = users.begin();
 	for ( ; iter != users.end(); ++iter ) {
-		ServerMessages::RPL_WHOREPLY( userSocket, iter->second, channelName ); // RPL_WHOREPLY 352
+		ServerMessages::RPL_WHOREPLY( userSocket, iter->second, user->getNickname(), channelName ); // RPL_WHOREPLY 352
 	}
 	ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), channelName ); // RPL_ENDOFWHO 315
 }
@@ -268,7 +269,7 @@ void	Server::whoUser( int userSocket, const std::string& username ) {
 	User* target = getUser( username );
 
 	if ( target != NULL) {
-		ServerMessages::RPL_WHOREPLY( userSocket, target, username ); // RPL_WHOREPLY 352
+		ServerMessages::RPL_WHOREPLY( userSocket, target, user->getNickname(), username ); // RPL_WHOREPLY 352
 	}
-		ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), username ); // RPL_ENDOFWHO 315
+	ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), username ); // RPL_ENDOFWHO 315
 }

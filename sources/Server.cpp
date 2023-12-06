@@ -136,6 +136,7 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 			break;
 
 		case WHO:
+			whoCommand( userSocket, command );
 			break;
 		
 		default:

@@ -104,10 +104,11 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 			break;
 		
 		case JOIN:
-			joinCommand( userSocket, command);
+			joinCommand( userSocket, command );
 			break;
 		
 		case KICK:
+			kickCommand( userSocket, command );
 			break;
 		
 		case INVITE:

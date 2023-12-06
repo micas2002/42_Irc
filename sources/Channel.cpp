@@ -31,6 +31,20 @@ const std::string&	Channel::getName() const { return ( _name ); }
 
 const std::string&	Channel::getTopic() const { return ( _topic ); }
 
+User*	Channel::getUser( const std::string& nickname ) {
+	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
+	if ( it != _operators.end() )
+		return ( it->second );
+	return ( NULL );
+}
+
+User*	Channel::getOperator( const std::string& nickname ) {
+	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
+	if ( it != _operators.end() )
+		return ( it->second );
+	return ( NULL );
+}
+
 int		Channel::getUserLimit() const { return ( _userLimit ); }
 
 int		Channel::getUserCount() const { return ( _users.size() ); }

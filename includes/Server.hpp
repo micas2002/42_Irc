@@ -87,7 +87,6 @@ class Server
 		// Commands	
 		void							selectCommand( int userSocket, std::string& command );
 
-		// JOIN	
 		void							joinCommand( int userSocket, std::string& command );
 		bool							isValidChannelName( std::string& channelName );
 		void							createNewChannel( std::string& channelName, User* user );
@@ -99,6 +98,8 @@ class Server
     	void							passCommand( int userSocket, std::string& command );
 		void							nickCommand( int userSocket, std::string& command );
 		void							userCommand( int userSocket, std::string& command );
+
+		void							kickCommand( int userSocket, std::string& command );
 
 	private:
 		std::map<std::string, User>		_users;

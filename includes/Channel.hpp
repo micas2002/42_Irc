@@ -37,6 +37,8 @@ class Channel {
 		const std::string&				getPassword() const;
 		const std::string&				getName() const;
 		const std::string&				getTopic() const;
+		User*							getUser( const std::string& nickname );
+		User*							getOperator( const std::string& nickname );
 		int								getUserLimit() const;
 		int								getUserCount() const;
 		bool							getInviteOnly() const;

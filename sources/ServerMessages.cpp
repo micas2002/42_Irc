@@ -66,6 +66,20 @@ void	ServerMessages::ERR_BADCHANNELKEY( const int socketFd, const std::string& c
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+// REPLIES
+void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, const std::string& mask ) {
+	std::string	message( "Tijolinhos 315 " + clientName + " " + mask + " :End of WHO list\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& sender, const std::string& target ) {
+	std::string message( "Tijolinhos 352 " + sender + " " + target + " " + user->getUsername() \
+		+ " " + user->getIp() + " Tijolinhos " + user->getNickname() + " H :0 realname\r\n" );
+
+  send( socketFd, message.c_str(), message.size(), 0 );
+}
+
 void	ServerMessages::ERR_CHANOPRIVSNEEDED( const int socketFd, const std::string& clientName, const std::string& channelName ) {
 	std::string	message( "Tijolinhos 475 " + clientName + " " + channelName + " :You're not channel operator\r\n" );
 	

@@ -135,6 +135,10 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 		case PRIVMSG:
 			messageComand( userSocket, command );
 			break;
+
+		case WHO:
+			whoCommand( userSocket, command );
+			break;
 		
 		default:
 			std::cout << "HASH: " << simpleHash( command ) << std::endl;

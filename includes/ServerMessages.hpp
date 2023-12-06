@@ -2,17 +2,18 @@
 
 #include <iostream>
 #include <sys/socket.h>
-
-// Colors
-#define RESET   "\033[0m"
-#define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
-#define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
-#define BOLDYELLOW  "\033[1m\033[33m"      /* Bold Yellow */
-#define BOLDCYAN    "\033[1m\033[36m"      /* Bold Cyan */
+#include "User.hpp"
 
 class ServerMessages {
 	public:
-		// ERR_BADCHANNELKEY 475
+
+		// REPLIES
+		// RPL_ENDOFWHO 315
+		static void		RPL_ENDOFWHO( int socketFd, const std::string& clientName, const std::string& mask );
+
+		// RPL_WHOREPLY 352
+		static void		RPL_WHOREPLY( int socketFd, User* user,  const std::string& sender, const std::string& target );
+
 		static void			ERR_NOSUCHCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName );
 		static void			ERR_NONICKNAMEGIVEN( const int socketFd, const std::string& clientName );
 		static void			ERR_NICKNAMEINUSE( const int socketFd, const std::string& clientName, const std::string& nick );

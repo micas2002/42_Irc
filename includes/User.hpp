@@ -21,6 +21,7 @@ class User
 		const std::string&	getNickname() const;
 		const std::string&	getUsername() const;
 		int					getSocketFd() const;
+		const std::string&	getIp() const;
 		bool				getPasswordStatus() const;
 		bool				getUsernameStatus() const;
 		bool				getNicknameStatus() const;
@@ -32,6 +33,7 @@ class User
 		void				setNickname( const std::string& nickname );
 		void				setUsername( const std::string& username );
 		void				setSocketFd( const int socketFd );
+		void				setIp( const std::string& ip );
 		void				setPasswordStatusTrue();
 		void				setUsernameStatusTrue();
 		void				setNicknameStatusTrue();
@@ -43,6 +45,7 @@ class User
 		std::string			_nickname;
 		std::string			_username;
 		int					_socketFd;
+		std::string			_ip;
 
 		bool				_passwordStatus;
 		bool				_usernameStatus;

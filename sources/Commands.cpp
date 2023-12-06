@@ -10,14 +10,13 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 	User*						user = getUser( userSocket );
 
 	if ( user->getIsAuthenticated() == false ) {
-		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 ); // what error???
 		return;
 	}
 
 	parameters = splitByCharacter( command, ' ' );
 	if ( parameters.size() < 2 ) {
-		// ERR_NEEDMOREPARAMS 461
-		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), parameters.at( 0 ) );
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), parameters.at( 0 ) ); // ERR_NEEDMOREPARAMS 461
 		return ;
 	}
 	if ( parameters.size() == 3 ) {
@@ -32,7 +31,7 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 
 	while ( getline( channelsStream, channelName, ',' ) ) {
 		if ( isValidChannelName( channelName ) == false ) {
-			// ERR_BADCHANMASK 476
+			ServerMessages::ERR_BADCHANMASK( userSocket, user->getNickname(), parameters.at( 0 ) ); // ERR_BADCHANMASK 476
 			continue ;
 		}
 
@@ -70,18 +69,17 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 
 	if ( channelPassword.empty() == false ) {
 		if ( key != channelPassword ) {
-			// ERR_BADCHANNELKEY 475
-			ServerMessages::ERR_BADCHANNELKEY( user->getSocketFd(), channelName, user->getNickname() );
+			ServerMessages::ERR_BADCHANNELKEY( user->getSocketFd(), user->getNickname(), channelName ); // ERR_BADCHANNELKEY 475
 			return ;
 		}
 	}
 	if ( channel.getUserLimit() != -1 && channel.getUserCount() >= channel.getUserLimit() ) {
-		// ERR_CHANNELISFULL 471
+		ServerMessages::ERR_CHANNELISFULL( user->getSocketFd(), user->getNickname(), channelName ); // ERR_CHANNELISFULL 471
 		return ;
 	}
 	if ( channel.getInviteOnly() == true ) {
 		if ( channel.isInvited( user ) == false ) {
-			// ERR_INVITEONLYCHAN 473
+			ServerMessages::ERR_INVITEONLYCHAN( user->getSocketFd(), user->getNickname(), channelName ); // ERR_INVITEONLYCHAN 473
 			return ;
 		}
 	}

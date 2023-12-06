@@ -270,3 +270,16 @@ void	Server::kickCommand( int userSocket, std::string& command ) {
 
 	channel->ejectUser( target );
 }
+
+void	Server::quitCommand( int userSocket, std::string& command ) {
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	std::map<std::string, User>::iterator it = _users.begin();
+
+	// if ( parameters.size() < 1 ) {
+	// 	for (; it != _users.end(); ++it)
+	// 	send( it->second.getSocketFd(), "")
+	// }
+}

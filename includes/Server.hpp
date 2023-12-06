@@ -101,6 +101,8 @@ class Server
 
 		void							kickCommand( int userSocket, std::string& command );
 
+		void							quitCommand( int userSocket, std::string& command );
+
 	private:
 		std::map<std::string, User>		_users;
 		std::map<int, std::string>		_usersBySocket;

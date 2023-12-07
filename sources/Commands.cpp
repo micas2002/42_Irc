@@ -136,7 +136,9 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 	User* user = getUser( userSocket );
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
-
+		// Need to create a copy of user and create a new one with the new nickname
+		// removeUser( user );
+		// User*
 		user->setNickname( parameters.at( 1 ) );
 		if ( user->getNicknameStatus() == false && user->getUsernameStatus() == true
 			&& user->getPasswordStatus() == true ) {
@@ -272,14 +274,27 @@ void	Server::kickCommand( int userSocket, std::string& command ) {
 }
 
 void	Server::quitCommand( int userSocket, std::string& command ) {
+
+	(void)userSocket;
+	
 	std::vector<std::string>	parameters;
 	
 	parameters = splitByCharacter( command, ' ' );
 
 	std::map<std::string, User>::iterator it = _users.begin();
+	std::string	message = "QUIT";
 
-	// if ( parameters.size() < 1 ) {
-	// 	for (; it != _users.end(); ++it)
-	// 	send( it->second.getSocketFd(), "")
-	// }
+	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
+		message = message + " " + *itP;
+	
+	removeUser( getUser( userSocket ) );
+
+	for (std::map<std::string, User>::iterator iter = _users.begin(); iter != _users.end(); ++iter) {
+		std::cout << "Socket: " << iter->second.getSocketFd() << " name : " << iter->second.getNickname() << std::endl;
+	}
+	
+	for (; it != _users.end(); ++it) { // Sending messages to all users not working
+		std::cout <<  it->second.getSocketFd() << std::endl;
+		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
+	}
 }

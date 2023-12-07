@@ -68,7 +68,7 @@ class Server
 		void							addChannel( Channel& channel );
 
 		// Removers	
-		void							removeUser( User& user );
+		void							removeUser( User* user );
 
 		std::vector<std::string>		splitByCharacter( const std::string& input, char c );
 

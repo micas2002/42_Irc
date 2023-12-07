@@ -13,6 +13,7 @@ User::User( const User& copy ) {
 	_nickname = copy._nickname;
 	_username = copy._username;
 	_socketFd = copy._socketFd;
+	_ip = copy._ip;
 	_passwordStatus = copy._passwordStatus;
 	_usernameStatus = copy._usernameStatus;
 	_nicknameStatus = copy._nicknameStatus;
@@ -27,6 +28,7 @@ User&	User::operator=( const User& copy ) {
 		_nickname = copy._nickname;
 		_username = copy._username;
 		_socketFd = copy._socketFd;
+		_ip = copy._ip;
 		_passwordStatus = copy._passwordStatus;
 		_usernameStatus = copy._usernameStatus;
 		_nicknameStatus = copy._nicknameStatus;
@@ -70,7 +72,7 @@ void	User::setNicknameStatusTrue() { _nicknameStatus = true; }
 void	User::setIsAuthenticatedTrue() { _isAuthenticated = true; }
 
 std::string	User::getMessagePrefix() const {
-	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + "localhost " );
+	std::string	messagePrefix( _nickname + "!" + _username + "@" + _ip +" " );
 	return ( messagePrefix );
 }
 

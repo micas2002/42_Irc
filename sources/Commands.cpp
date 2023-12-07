@@ -54,12 +54,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	channel.addOperator( user );
 	addChannel( channel );
 
-	// send JOIN message to user
-
-	// PUt on REPLIES in SErverMessages
-	std::string joinMessage( user->getMessagePrefix() + "JOIN " + channelName + "\r\n" );
-	
-	send ( user->getSocketFd(), joinMessage.c_str(), joinMessage.length(), 0 );
+	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
@@ -89,12 +84,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 	channel.removeInvite( user );
 	channel.addUser( user );
 
-	// send JOIN message to user
-
-	// PUt on REPLIES in SErverMessages
-	std::string joinMessage( user->getMessagePrefix() + "JOIN " + channelName + "\r\n" );
-	
-	send ( user->getSocketFd(), joinMessage.c_str(), joinMessage.length(), 0 );
+	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
 
 // PASS command

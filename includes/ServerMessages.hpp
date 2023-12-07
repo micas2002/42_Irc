@@ -40,6 +40,9 @@ class ServerMessages {
 		// RPL_WHOREPLY 352
 		static void		RPL_WHOREPLY( int socketFd, User* user,  const std::string& sender, const std::string& target );
 
+		// JOIN Message
+		static void		JOIN_MESSAGE( int socketFd, User* user, const std::string& channelName );
+
 	private:
 		ServerMessages();
 		~ServerMessages();

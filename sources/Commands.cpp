@@ -332,3 +332,47 @@ void	Server::whoUser( int userSocket, const std::string& username ) {
 	}
 	ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), username ); // RPL_ENDOFWHO 315
 }
+
+
+// MODE Command
+void	Server::modeCommand( int userSocket, std::string& command ) {
+	// if ( user->getIsAuthenticated() == false ) {
+	// 	send( userSocket, "Server: You must first register/r/n", 33, 0 );
+	// 	return ;
+	// }
+	User*						sender = getUser( userSocket );
+	std::vector< std::string >	params = splitByCharacter( command, ' ' );
+
+	if ( params.at( 1 ).find( '#' ) != std::string::npos ) {
+		Channel*	ch = getChannel( params.at( 1 ) );
+		if (!ch);
+			// Error message
+		
+	}
+	else {
+		//MODE user
+	}
+
+}
+
+void	Server::modeChannel( User* sender, std::vector< std::string > params, Channel* ch ) {
+	if ( params.size() == 2 ) {
+		// Send back channel modes
+	}
+	else {
+		std::string	rawModes = params.at( 2 );
+		std::vector< std::string > modeChanges;
+		if ( rawModes.length() % 2 == 0 ) {
+			for ( size_t i = 0; i < rawModes.length(); i += 2 ) {
+				modeChanges.push_back( rawModes.substr( i, 2 ) );
+			}
+		}
+		else
+			std::cout << "Input string length is not even." << std::endl;
+
+		if ( !ch->isOperator( sender ) ) {
+			// Error message
+		}
+		
+	}
+}

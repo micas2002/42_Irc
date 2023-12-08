@@ -118,6 +118,7 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 			break;
 		
 		case MODE:
+			modeCommand( userSocket, command );
 			break;
 
 		case PASS:

@@ -95,7 +95,7 @@ class Server
 		void							whoCommand( int userSocket, std::string& command );
 
 		// JOIN	
-		void							joinCommand( int userSocket, std::string& command );
+		//void							joinCommand( int userSocket, std::string& command );
 		bool							isValidChannelName( std::string& channelName );
 		void							createNewChannel( std::string& channelName, User* user );
 		void							addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
@@ -108,6 +108,10 @@ class Server
 		void							whoUser( int userSocket, const std::string& username );
 
 		void							kickCommand( int userSocket, std::string& command );
+
+		// MODE
+		void							modeCommand( int userSocket, std::string& command );
+		void							modeChannel( User* sender, std::vector< std::string > params, Channel* ch );
 
 	private:
 		std::map<std::string, User>		_users;

@@ -92,3 +92,10 @@ void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) 
 		send( it->second->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
 	}
 }
+
+bool	Channel::isOperator( User* user ) {
+	std::map<std::string, User*>::iterator	it = _operators.find( user->getNickname() );
+	if ( it != _operators.end() )
+		return ( true );
+	return ( false );
+}

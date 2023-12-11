@@ -133,13 +133,16 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		return;
 	}
 
-	User* user = getUser( userSocket );
+	User*	user = getUser( userSocket );
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
-		// Need to create a copy of user and create a new one with the new nickname
-		// removeUser( user );
-		// User*
-		user->setNickname( parameters.at( 1 ) );
+		User	updatedUser( *user );
+
+		removeUser( user );
+		updatedUser.setNickname( parameters.at( 1 ) );
+		addUser( updatedUser );
+
+		user = getUser( userSocket );
 		if ( user->getNicknameStatus() == false && user->getUsernameStatus() == true
 			&& user->getPasswordStatus() == true ) {
 				user->setIsAuthenticatedTrue();
@@ -287,7 +290,6 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
 		message = message + " " + *itP;
 	
-	removeUser( getUser( userSocket ) );
 
 	for (std::map<std::string, User>::iterator iter = _users.begin(); iter != _users.end(); ++iter) {
 		std::cout << "Socket: " << iter->second.getSocketFd() << " name : " << iter->second.getNickname() << std::endl;
@@ -297,4 +299,5 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 		std::cout <<  it->second.getSocketFd() << std::endl;
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
 	}
+	removeUser( getUser( userSocket ) );
 }

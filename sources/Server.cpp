@@ -62,8 +62,8 @@ void	Server::addChannel( Channel& channel ) {
 }
 
 void	Server::removeUser( User* user ) {
-	std::cout << "removed: " << _usersBySocket.erase( user->getSocketFd() ) << std::endl;
-	std::cout << "removed: " << _users.erase( user->getNickname() ) << std::endl;
+	_usersBySocket.erase( user->getSocketFd() );
+	_users.erase( user->getNickname() );
 }
 
 std::vector<std::string>	Server::splitByCharacter( const std::string& input, char c ) {

@@ -13,6 +13,7 @@ User::User( const User& copy ) {
 	_nickname = copy._nickname;
 	_username = copy._username;
 	_socketFd = copy._socketFd;
+	_ip = copy._ip;
 	_passwordStatus = copy._passwordStatus;
 	_usernameStatus = copy._usernameStatus;
 	_nicknameStatus = copy._nicknameStatus;
@@ -27,6 +28,7 @@ User&	User::operator=( const User& copy ) {
 		_nickname = copy._nickname;
 		_username = copy._username;
 		_socketFd = copy._socketFd;
+		_ip = copy._ip;
 		_passwordStatus = copy._passwordStatus;
 		_usernameStatus = copy._usernameStatus;
 		_nicknameStatus = copy._nicknameStatus;
@@ -41,6 +43,8 @@ const std::string&	User::getNickname() const { return ( _nickname ); }
 const std::string&	User::getUsername() const { return ( _username ); }
 	
 int	User::getSocketFd() const { return ( _socketFd ); }
+
+const std::string&	User::getIp() const { return ( _ip ); }
 
 bool	User::getPasswordStatus() const { return ( _passwordStatus ); }
 
@@ -57,6 +61,8 @@ void	User::setUsername( const std::string& username ) { _username = username; }
 
 void	User::setSocketFd( const int socketFd ) { _socketFd = socketFd; }
 
+void	User::setIp( const std::string& ip ) { _ip = ip; }
+
 void	User::setPasswordStatusTrue() { _passwordStatus = true; }
 
 void	User::setUsernameStatusTrue() { _usernameStatus = true; }
@@ -66,7 +72,7 @@ void	User::setNicknameStatusTrue() { _nicknameStatus = true; }
 void	User::setIsAuthenticatedTrue() { _isAuthenticated = true; }
 
 std::string	User::getMessagePrefix() const {
-	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + "localhost " );
+	std::string	messagePrefix( _nickname + "!" + _username + "@" + _ip +" " );
 	return ( messagePrefix );
 }
 

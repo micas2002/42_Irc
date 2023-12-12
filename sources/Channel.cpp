@@ -2,10 +2,17 @@
 
 Channel::Channel() : _name( "" ), _userLimit( -1 ) {}
 
-Channel::Channel( std::string name ) : _name( name ) {}
+Channel::Channel( std::string name ) : _name( name ), _userLimit( -1 ) {}
 
-Channel::Channel( const Channel& copy ) {
-	*this = copy;
+Channel::Channel( const Channel& copy ): _name(copy._name) {
+	_channelPassword = copy._channelPassword;
+	_topic = copy._topic;
+	_userLimit = copy._userLimit;
+	_inviteOnly = copy._inviteOnly;
+	_topicRestriction = copy._topicRestriction;
+	_users = copy._users;
+	_operators = copy._operators;
+	_inviteList = copy._inviteList;
 }
 
 Channel::~Channel() {}
@@ -30,6 +37,12 @@ const std::string&	Channel::getPassword() const { return ( _channelPassword ); }
 const std::string&	Channel::getName() const { return ( _name ); }
 
 const std::string&	Channel::getTopic() const { return ( _topic ); }
+
+const std::map<std::string, User*>&	Channel::getUsers() const { return ( _users ); }
+
+const std::map<std::string, User*>&	Channel::getOperators() const { return ( _operators ); }
+
+const std::map<std::string, User*>&	Channel::getInvites() const { return ( _inviteList ); }
 
 User*	Channel::getUser( const std::string& nickname ) {
 	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
@@ -68,11 +81,11 @@ void	Channel::addUser( User* newUser ) {
 }
 
 void	Channel::addOperator( User* newOperator ) { 
-	_users.insert( std::pair<std::string, User*>( ( newOperator->getNickname() ), newOperator ) );
+	_operators.insert( std::pair<std::string, User*>( ( newOperator->getNickname() ), newOperator ) );
 }
 
 void	Channel::addInvite( User* newInvite ) { 
-	_users.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
+	_inviteList.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
 }
 
 void	Channel::ejectUser( User* user ) { _users.erase( user->getUsername() ); }

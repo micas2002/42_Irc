@@ -38,6 +38,7 @@ enum COMMANDS {
 	NICK = 725,
 	USER = 786,
 	PRIVMSG = 2187,
+	WHO =  468,
 };
 
 class Server
@@ -86,18 +87,24 @@ class Server
 
 		// Commands	
 		void							selectCommand( int userSocket, std::string& command );
-
 		void							joinCommand( int userSocket, std::string& command );
+    	void							passCommand( int userSocket, std::string& command );
+		void							nickCommand( int userSocket, std::string& command );
+		void							userCommand( int userSocket, std::string& command );
+		void							messageComand( int userSocket, std::string& command );
+		void							whoCommand( int userSocket, std::string& command );
+
+		// JOIN	
 		bool							isValidChannelName( std::string& channelName );
 		void							createNewChannel( std::string& channelName, User* user );
 		void							addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
 
-		void							messageComand( int userSocket, std::string& command );
+		// Message
 		std::string						extractNick( std::string& message );
-	
-    	void							passCommand( int userSocket, std::string& command );
-		void							nickCommand( int userSocket, std::string& command );
-		void							userCommand( int userSocket, std::string& command );
+
+		// WHO
+		void							whoChannel( int userSocket, const std::string& channelName );
+		void							whoUser( int userSocket, const std::string& username );
 
 		void							kickCommand( int userSocket, std::string& command );
 

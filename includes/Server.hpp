@@ -69,7 +69,7 @@ class Server
 		void							addChannel( Channel& channel );
 
 		// Removers	
-		void							removeUser( User& user );
+		void							removeUser( User* user );
 
 		std::vector<std::string>		splitByCharacter( const std::string& input, char c );
 
@@ -107,6 +107,8 @@ class Server
 		void							whoUser( int userSocket, const std::string& username );
 
 		void							kickCommand( int userSocket, std::string& command );
+
+		void							quitCommand( int userSocket, std::string& command );
 
 	private:
 		std::map<std::string, User>		_users;

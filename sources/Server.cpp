@@ -61,9 +61,9 @@ void	Server::addChannel( Channel& channel ) {
 	_channels.insert( std::pair<std::string, Channel>( channel.getName(), channel ) );
 }
 
-void	Server::removeUser( User& user ) {
-	_usersBySocket.erase( user.getSocketFd() );
-	_users.erase( user.getNickname() );
+void	Server::removeUser( User* user ) {
+	_usersBySocket.erase( user->getSocketFd() );
+	_users.erase( user->getNickname() );
 }
 
 std::vector<std::string>	Server::splitByCharacter( const std::string& input, char c ) {
@@ -101,6 +101,7 @@ bool	Server::findDuplicateNicknames( const std::string& nickname ) const {
 void	Server::selectCommand( int userSocket, std::string& command ) {
 	switch ( simpleHash( command ) ) {
 		case QUIT:
+			quitCommand( userSocket, command );
 			break;
 		
 		case JOIN:

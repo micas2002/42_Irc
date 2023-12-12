@@ -129,11 +129,16 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		return;
 	}
 
-	User* user = getUser( userSocket );
+	User*	user = getUser( userSocket );
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
+		User	updatedUser( *user );
 
-		user->setNickname( parameters.at( 1 ) );
+		removeUser( user );
+		updatedUser.setNickname( parameters.at( 1 ) );
+		addUser( updatedUser );
+
+		user = getUser( userSocket );
 		if ( user->getNicknameStatus() == false && user->getUsernameStatus() == true
 			&& user->getPasswordStatus() == true ) {
 				user->setIsAuthenticatedTrue();
@@ -267,6 +272,32 @@ void	Server::kickCommand( int userSocket, std::string& command ) {
 	}
 
 	channel->ejectUser( target );
+}
+
+void	Server::quitCommand( int userSocket, std::string& command ) {
+
+	(void)userSocket;
+	
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	std::map<std::string, User>::iterator it = _users.begin();
+	std::string	message = "QUIT";
+
+	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
+		message = message + " " + *itP;
+	
+
+	for (std::map<std::string, User>::iterator iter = _users.begin(); iter != _users.end(); ++iter) {
+		std::cout << "Socket: " << iter->second.getSocketFd() << " name : " << iter->second.getNickname() << std::endl;
+	}
+	
+	for (; it != _users.end(); ++it) { // Sending messages to all users not working
+		std::cout <<  it->second.getSocketFd() << std::endl;
+		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
+	}ijolinhos faa Hijolinhos faa H
+	removeUser( getUser( userSocket ) );
 }
 
 // WHO command

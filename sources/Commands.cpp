@@ -296,7 +296,7 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 	for (; it != _users.end(); ++it) { // Sending messages to all users not working
 		std::cout <<  it->second.getSocketFd() << std::endl;
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
-	}ijolinhos faa Hijolinhos faa H
+	}
 	removeUser( getUser( userSocket ) );
 }
 

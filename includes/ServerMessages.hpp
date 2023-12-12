@@ -7,8 +7,16 @@
 class ServerMessages {
 	public:
 		// ERROR
+		// ERR_NOSUCHNICK 401
+		static void		ERR_NOSUCHNICK( const int socketFd, const std::string& clientName, const std::string& nickname );
 		// ERR_NOSUCHCHANNEL 403
 		static void		ERR_NOSUCHCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName );
+		// ERR_CANNOTSENDTOCHAN 404
+		static void		ERR_CANNOTSENDTOCHAN( const int socketFd, const std::string& clientName, const std::string& channelName );
+		// ERR_NORECIPIENT 411
+		static void		ERR_NORECIPIENT( const int socketFd, const std::string& clientname, const std::string& command );
+		// ERR_NOTEXTTOSEND 412
+		static void		ERR_NOTEXTTOSEND( const int socketFd, const std::string& clientName );
 		// ERR_NONICKNAMEGIVEN 431
 		static void		ERR_NONICKNAMEGIVEN( const int socketFd, const std::string& clientName );
 		// ERR_NICKNAMEINUSE 433
@@ -17,6 +25,8 @@ class ServerMessages {
 		static void		ERR_USERNOTINCHANNEL( const int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// ERR_NOTONCHANNEL 442
 		static void		ERR_NOTONCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName );
+		// ERR_NOTREGISTERED 451
+		static void		ERR_NOTREGISTERED( const int socketFd, const std::string& clientName );
 		// ERR_NEEDMOREPARAMS 461
 		static void		ERR_NEEDMOREPARAMS( const int socketFd, const std::string& clientName, const std::string& command );
 		// ERR_ALREADYREGISTERED 462

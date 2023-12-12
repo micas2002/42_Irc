@@ -1,7 +1,6 @@
 #include "Server.hpp"
 
 // Join command
-
 void	Server::joinCommand( int userSocket, std::string& command ) {
 	std::vector<std::string>	parameters;
 	std::vector<std::string>	channelsKeys;
@@ -10,7 +9,7 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 	User*						user = getUser( userSocket );
 
 	if ( user->getIsAuthenticated() == false ) {
-		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 ); // what error???
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 
@@ -59,7 +58,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
 	Channel&			channel = _channels[channelName];
-	std::string		key;
+	std::string			key;
 	const std::string&	channelPassword = channel.getPassword();
 
 	if ( channelPassword.empty() == false ) {
@@ -92,7 +91,7 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
 	
 	if ( user->getPasswordStatus() == true ) {
-		send ( userSocket, "PASS: You may not reregister\n", 29, 0);
+		ServerMessages::ERR_ALREADYREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 
@@ -101,18 +100,16 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
-		send( userSocket, "PASS: Not enough parameters\n", 28, 0 );
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), command );
 		return;
 	}
 
 	if ( checkIfPasswordsMatch( parameters.at( 1 ) ) == false ) {
-		std::cout << SERVER_INCORRECT_PASSWORD << std::endl;
-		send( userSocket, SERVER_INCORRECT_PASSWORD,  56, 0 );
+		ServerMessages::ERR_PASSWDMISMATCH( userSocket, user->getNickname() );
 		return;
 	}
 	user->setPasswordStatusTrue();
 	if ( user->getNicknameStatus() == true && user->getUsernameStatus() == true ) {
-		std::cout << "here\n";
 		user->setIsAuthenticatedTrue();
 	}
 	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
@@ -120,16 +117,15 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 
 // NICK command 
 void	Server::nickCommand( int userSocket, std::string& command ) {
+	User*						user = getUser( userSocket );
 	std::vector<std::string>	parameters;
 	
 	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
-		send( userSocket, "NICK: No nickname given\n", 24, 0 );
+		ServerMessages::ERR_NONICKNAMEGIVEN( userSocket, user->getNickname() );
 		return;
 	}
-
-	User*	user = getUser( userSocket );
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
 		User	updatedUser( *user );
@@ -148,7 +144,7 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
 	}
 	else
-		send( userSocket, SERVER_NICKNAME_ALREADY_IN_USE, 74, 0 );
+		ServerMessages::ERR_NICKNAMEINUSE( userSocket, user->getNickname(), parameters.at( 1 ) );
 }
 
 // USER command
@@ -156,7 +152,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	User* user = getUser( userSocket );
 
 	if ( user->getUsernameStatus() == true ) {
-		send( userSocket, "USER: You may not reregister\n", 29, 0 );
+		ServerMessages::ERR_ALREADYREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 	
@@ -165,7 +161,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
-		send( userSocket, "USER: No username given\n", 24, 0 );
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), command );
 		return;
 	}
 
@@ -183,23 +179,24 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 	std::string			recipient_name;
 	std::string			message;
 
+	// TO DO:
+	// need to implement errors 404, and 411
+
 	if ( sender->getIsAuthenticated() == false ) {
-		send( sender->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		ServerMessages::ERR_NOTREGISTERED( userSocket, sender->getNickname() );
 		return;
 	}
 
 	message = command.substr( command.find( ':' ) + 1 );
 	if ( message.length() == 0 ) {
-		//implement error msg
-		std::cout << "Message error" << std::endl;
+		ServerMessages::ERR_NOTEXTTOSEND( userSocket, sender->getNickname() );
 		return ;
 	}
 	recipient_name = extractNick( command );
 	if ( recipient_name.find('#') != std::string::npos ) {
 		Channel*	recipient = getChannel( recipient_name );
 		if ( recipient == NULL ) {
-			// Implement error msg
-			std::cout << "Recipient channel error" << std::endl;
+			ServerMessages::ERR_NOSUCHNICK( userSocket, sender->getNickname(), recipient_name );
 			return ;
 		}
 
@@ -209,8 +206,7 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 	else {
 		User*	recipient = getUser( recipient_name );
 		if ( recipient == NULL ) {
-			// Implement error msg
-			std::cout << "Recipient user error" << std::endl;
+			ServerMessages::ERR_NOSUCHNICK( userSocket, sender->getNickname(), recipient_name );
 			return ;
 		}
 		std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
@@ -230,11 +226,12 @@ std::string	Server::extractNick( std::string& message ) {
 	return ( "" );
 }
 
+// KICK command
 void	Server::kickCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
 
 	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
-		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 
@@ -274,10 +271,8 @@ void	Server::kickCommand( int userSocket, std::string& command ) {
 	channel->ejectUser( target );
 }
 
+// QUIT command
 void	Server::quitCommand( int userSocket, std::string& command ) {
-
-	(void)userSocket;
-	
 	std::vector<std::string>	parameters;
 	
 	parameters = splitByCharacter( command, ' ' );
@@ -288,7 +283,6 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
 		message = message + " " + *itP;
 	
-
 	for (std::map<std::string, User>::iterator iter = _users.begin(); iter != _users.end(); ++iter) {
 		std::cout << "Socket: " << iter->second.getSocketFd() << " name : " << iter->second.getNickname() << std::endl;
 	}
@@ -296,7 +290,7 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 	for (; it != _users.end(); ++it) { // Sending messages to all users not working
 		std::cout <<  it->second.getSocketFd() << std::endl;
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
-	}ijolinhos faa Hijolinhos faa H
+	}
 	removeUser( getUser( userSocket ) );
 }
 
@@ -304,10 +298,10 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 void	Server::whoCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
 	
-	// if ( user->getIsAuthenticated() == false ) {
-	// 	send( userSocket, "Server: You must first register/r/n", 33, 0 );
-	// 	return ;
-	// }
+	if ( user->getIsAuthenticated() == false ) {
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
+		return ;
+	}
 
 	std::vector<std::string>	parameters;
 	parameters = splitByCharacter( command, ' ' );

@@ -13,12 +13,27 @@ ServerMessages&	ServerMessages::operator = ( const ServerMessages& assign ) {
 }
 
 // ERRORS
+// ERR_NOSUCHNICK 401
+void		ServerMessages::ERR_NOSUCHNICK( const int socketFd, const std::string& clientName, const std::string& nickname ) {
+	std::string message( " Tijolinhos 401 " + clientName + " " + nickname + " :No such nick/channel\r\n" );
+
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
 // ERR_NOSUCHCHANNEL 403
 void	ServerMessages::ERR_NOSUCHCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName ) {
 	std::string	message( "Tijolinhos 403 " + clientName + " " + channelName + " :No such channel\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
+
+// ERR_NOTEXTTOSEND 412
+void		ServerMessages::ERR_NOTEXTTOSEND( const int socketFd, const std::string& clientName ) {
+	std::string message ( "Tijolinhos 412 " + clientName + " :No text to send\r\n");
+
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
 
 // ERR_NONICKNAMEGIVEN 431
 void	ServerMessages::ERR_NONICKNAMEGIVEN( const int socketFd, const std::string& clientName ) {
@@ -48,6 +63,12 @@ void	ServerMessages::ERR_NOTONCHANNEL( const int socketFd, const std::string& cl
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+// ERR_NOTREGISTERED 451
+void	ServerMessages::ERR_NOTREGISTERED( const int socketFd, const std::string& clientName ) {
+	std::string	message( "Tijolinhos 451 " + clientName + " :You have not registered\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
 // ERR_NEEDMOREPARAMS 461
 void	ServerMessages::ERR_NEEDMOREPARAMS( const int socketFd, const std::string& clientName, const std::string& command ) {
 	std::string	message( "Tijolinhos 461 " + clientName + " " + command + " :Not enough parameters\r\n" );

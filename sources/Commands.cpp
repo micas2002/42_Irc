@@ -59,11 +59,11 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
 	Channel&			channel = _channels[channelName];
-	std::string&		key = channelsKeys.at( 0 );
+	std::string		key;
 	const std::string&	channelPassword = channel.getPassword();
 
 	if ( channelPassword.empty() == false ) {
-		if ( key != channelPassword ) {
+		if ( channelsKeys.size() == 0 || ( key = channelsKeys.at( 0 ) ) != channelPassword ) {
 			ServerMessages::ERR_BADCHANNELKEY( user->getSocketFd(), user->getNickname(), channelName ); // ERR_BADCHANNELKEY 475
 			return ;
 		}
@@ -272,7 +272,6 @@ void	Server::kickCommand( int userSocket, std::string& command ) {
 // WHO command
 void	Server::whoCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
-
 	
 	// if ( user->getIsAuthenticated() == false ) {
 	// 	send( userSocket, "Server: You must first register/r/n", 33, 0 );

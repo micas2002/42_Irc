@@ -18,7 +18,9 @@
 #include <algorithm>
 #include <map>
 
-#include "./User.hpp"
+#include "User.hpp"
+
+class User;
 
 class Channel {
 	public:

@@ -2,6 +2,10 @@
 
 #include <iostream>
 #include <arpa/inet.h>
+#include <map>
+#include "Channel.hpp"
+
+class Channel;
 
 class User
 {
@@ -18,6 +22,7 @@ class User
 		User&				operator = (const User& assiign);
 
 		//Getters
+		std::map<std::string, Channel>	getChannels() const;
 		const std::string&	getNickname() const;
 		const std::string&	getUsername() const;
 		int					getSocketFd() const;
@@ -42,6 +47,7 @@ class User
 		bool				userFieldsEmpty();
 	
 	private:
+		std::map<std::string, Channel>	_channels;
 		std::string			_nickname;
 		std::string			_username;
 		int					_socketFd;

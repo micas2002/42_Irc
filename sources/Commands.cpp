@@ -52,6 +52,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
+	user->getChannels().insert( std::pair<std::string, Channel>( channelName, channel ) );
 
 	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
@@ -82,6 +83,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		channelsKeys.erase( channelsKeys.begin() );
 	channel.removeInvite( user );
 	channel.addUser( user );
+	user->getChannels().insert( std::pair<std::string, Channel>( channelName, channel ) );
 
 	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
@@ -277,21 +279,27 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 	
 	parameters = splitByCharacter( command, ' ' );
 
-	std::map<std::string, User>::iterator it = _users.begin();
 	std::string	message = "QUIT";
 
 	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
 		message = message + " " + *itP;
 	
-	for (std::map<std::string, User>::iterator iter = _users.begin(); iter != _users.end(); ++iter) {
-		std::cout << "Socket: " << iter->second.getSocketFd() << " name : " << iter->second.getNickname() << std::endl;
+	User*	user = getUser( userSocket );
+	std::map<std::string, Channel>::iterator	chanIt = user->getChannels().begin();
+
+	for (; chanIt != user->getChannels().begin(); ++chanIt ) { // Removes user from channels he is part of
+		chanIt->second.ejectUser( user );
+		user->getChannels().erase( chanIt );
 	}
+
+	removeUser( getUser( userSocket ) ); // Removes user from server
+
+	std::map<std::string, User>::iterator	it = _users.begin();
 	
 	for (; it != _users.end(); ++it) { // Sending messages to all users not working
 		std::cout <<  it->second.getSocketFd() << std::endl;
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
 	}
-	removeUser( getUser( userSocket ) );
 }
 
 // WHO command

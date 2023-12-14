@@ -38,6 +38,9 @@ User&	User::operator=( const User& copy ) {
 }
 
 // Getters
+
+std::map<std::string, Channel>	User::getChannels() const { return ( _channels ); }
+
 const std::string&	User::getNickname() const { return ( _nickname ); }
 
 const std::string&	User::getUsername() const { return ( _username ); }

@@ -41,6 +41,14 @@ enum COMMANDS {
 	WHO =  468,
 };
 
+enum MODES {
+	MODE_I = 151,
+	MODE_T = 164,
+	MODE_K = 153,
+	MODE_O = 157,
+	MODE_L = 154
+};
+
 class Server
 {
 	public:
@@ -112,6 +120,11 @@ class Server
 		// MODE
 		void							modeCommand( int userSocket, std::string& command );
 		void							modeChannel( User* sender, std::vector< std::string > params, Channel* ch );
+		void							modeInvite( Channel* channel, std::string flag, User* sender );
+		void							modeTopic( Channel* channel, std::string flag, User* sender );
+		void							modeKey( Channel* channel, std::string flag, User* sender, std::string newKey );
+		void							modeOperator( Channel *channel, std::string flag, User* sender, std::string receiver );
+		void							modeLimit( Channel *channel, std::string flag, User* sender, std::string limit );
 
 	private:
 		std::map<std::string, User>		_users;

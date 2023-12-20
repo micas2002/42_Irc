@@ -51,6 +51,8 @@ class Channel {
 		void									setPassword( std::string password );
 		void									setTopic( std::string topic );
 		void									setUserLimit( int userLimit );
+		void									setInviteOnly( bool inviteOnly );
+		void									setTopicRestriction( bool topicRestriction );
 		void									addUser( User* newUser );
 		void									addOperator( User* newOperator );
 		void									addInvite( User* newInvite);

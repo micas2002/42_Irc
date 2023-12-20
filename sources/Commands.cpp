@@ -358,6 +358,7 @@ void	Server::modeCommand( int userSocket, std::string& command ) {
 void	Server::modeChannel( User* sender, std::vector< std::string > params, Channel* ch ) {
 	if ( params.size() == 2 ) {
 		// Send back channel modes
+		// :cadmium.libera.chat 324 duartebaeta #libera +CPTntf #libera-overflow
 	}
 	else {
 		std::string	rawModes = params.at( 2 );
@@ -368,11 +369,54 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 			}
 		}
 		else
-			std::cout << "Input string length is not even." << std::endl;
+			std::cout << "Placeholder error" << std::endl;
 
 		if ( !ch->isOperator( sender ) ) {
 			// Error message
 		}
-		
+		int	paramsCounter = 3;
+		std::string argument;
+		for ( std::vector< std::string >::iterator it = modeChanges.begin(); it != modeChanges.end(); it++ ) {
+			switch ( simpleHash( it[ 1 ] ) )
+			{
+				case MODE_I:
+					modeInvite( ch, *it, sender );
+					break;
+				
+				case MODE_T:
+					modeTopic( ch, *it, sender );
+					break;
+
+				case MODE_K:
+					try {
+						argument = params.at( paramsCounter++ );
+						modeKey( ch, *it, sender, argument );
+					} catch ( std::out_of_range &e ) {
+						//Error
+					}
+					break;
+
+				case MODE_O:
+					try {
+						argument = params.at( paramsCounter++ );
+						modeOperator( ch, *it, sender, argument );
+					} catch ( std::out_of_range &e ) {
+						//Error
+					}
+					break;
+
+				case MODE_L:
+					try {
+						argument = params.at( paramsCounter++ );
+						modeLimit( ch, *it, sender, argument );
+					} catch ( std::out_of_range &e ) {
+						//Error
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
 	}
 }

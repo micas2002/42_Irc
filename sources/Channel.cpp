@@ -69,6 +69,10 @@ void	Channel::setTopic( std::string topic ) { _topic = topic; }
 
 void	Channel::setUserLimit( int userLimit ) { _userLimit = userLimit; }
 
+void	Channel::setInviteOnly( bool inviteOnly ) { _inviteOnly = inviteOnly; }
+
+void	Channel::setTopicRestriction( bool topicRestriction ) { _topicRestriction = topicRestriction; }
+
 void	Channel::addUser( User* newUser ) { 
 	_users.insert( std::pair<std::string, User*>( ( newUser->getNickname() ), newUser ) ); 
 }

@@ -52,7 +52,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
-	user->getChannels().insert( std::pair<std::string, Channel>( channelName, channel ) );
+	user->addChannel( channelName, &_channels[channelName]);
 
 	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
@@ -83,7 +83,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		channelsKeys.erase( channelsKeys.begin() );
 	channel.removeInvite( user );
 	channel.addUser( user );
-	user->getChannels().insert( std::pair<std::string, Channel>( channelName, channel ) );
+	user->addChannel( channelName, &channel );
 
 	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
@@ -229,7 +229,7 @@ std::string	Server::extractNick( std::string& message ) {
 }
 
 // KICK command
-void	Server::kickCommand( int userSocket, std::string& command ) {
+void	Server::kickCommand( int userSocket, const std::string& command ) {
 	User*	user = getUser( userSocket );
 
 	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
@@ -284,12 +284,14 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
 		message = message + " " + *itP;
 	
-	User*	user = getUser( userSocket );
-	std::map<std::string, Channel>::iterator	chanIt = user->getChannels().begin();
+	User*										user = getUser( userSocket );
+	std::map<std::string, Channel*>				channelsMap = user->getChannels();
+	std::map<std::string, Channel*>::iterator	chanIt = channelsMap.begin();
+	Channel*									channel;
 
-	for (; chanIt != user->getChannels().begin(); ++chanIt ) { // Removes user from channels he is part of
-		chanIt->second.ejectUser( user );
-		user->getChannels().erase( chanIt );
+	for (; chanIt != channelsMap.end(); ++chanIt ) { // Removes user from channels he is part of
+		channel = getChannel( chanIt->first );
+		channel->ejectUser( user );
 	}
 
 	removeUser( getUser( userSocket ) ); // Removes user from server

@@ -58,7 +58,7 @@ class Channel {
 		void									addInvite( User* newInvite);
 
 		//Removers
-		void									ejectUser(User* user);
+		void									ejectUser( User* user);
 		void									ejectOperator(User* user);
 		void									removeInvite(User* invite);
 

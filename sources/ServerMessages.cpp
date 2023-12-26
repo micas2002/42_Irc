@@ -143,7 +143,7 @@ void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& 
 
 // JOIN_MESSAGE
 void	ServerMessages::JOIN_MESSAGE( const int socketFd, User* user, const std::string& channelName ) {
-	std::string	message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp() + " "\
+	std::string	message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
 		+ " JOIN " + channelName + "\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );

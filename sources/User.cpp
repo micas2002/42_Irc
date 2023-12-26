@@ -72,7 +72,7 @@ void	User::setNicknameStatusTrue() { _nicknameStatus = true; }
 void	User::setIsAuthenticatedTrue() { _isAuthenticated = true; }
 
 std::string	User::getMessagePrefix() const {
-	std::string	messagePrefix( _nickname + "!" + _username + "@" + _ip +" " );
+	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + _ip +" " );
 	return ( messagePrefix );
 }
 

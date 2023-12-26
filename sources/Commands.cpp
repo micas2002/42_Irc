@@ -52,6 +52,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
+	user->addChannel( channelName, &_channels[channelName]);
 
 	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
@@ -82,6 +83,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		channelsKeys.erase( channelsKeys.begin() );
 	channel.removeInvite( user );
 	channel.addUser( user );
+	user->addChannel( channelName, &channel );
 
 	std::map<std::string, User*>::iterator	iter = channel.getUsers().begin();
 	for ( ; iter != channel.getUsers().end(); ++iter ) {
@@ -230,7 +232,7 @@ std::string	Server::extractNick( std::string& message ) {
 }
 
 // KICK command
-void	Server::kickCommand( int userSocket, std::string& command ) {
+void	Server::kickCommand( int userSocket, const std::string& command ) {
 	User*	user = getUser( userSocket );
 
 	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
@@ -280,21 +282,29 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 	
 	parameters = splitByCharacter( command, ' ' );
 
-	std::map<std::string, User>::iterator it = _users.begin();
 	std::string	message = "QUIT";
 
 	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
 		message = message + " " + *itP;
 	
-	for (std::map<std::string, User>::iterator iter = _users.begin(); iter != _users.end(); ++iter) {
-		std::cout << "Socket: " << iter->second.getSocketFd() << " name : " << iter->second.getNickname() << std::endl;
+	User*										user = getUser( userSocket );
+	std::map<std::string, Channel*>				channelsMap = user->getChannels();
+	std::map<std::string, Channel*>::iterator	chanIt = channelsMap.begin();
+	Channel*									channel;
+
+	for (; chanIt != channelsMap.end(); ++chanIt ) { // Removes user from channels he is part of
+		channel = getChannel( chanIt->first );
+		channel->ejectUser( user );
 	}
+
+	removeUser( getUser( userSocket ) ); // Removes user from server
+
+	std::map<std::string, User>::iterator	it = _users.begin();
 	
 	for (; it != _users.end(); ++it) { // Sending messages to all users not working
 		std::cout <<  it->second.getSocketFd() << std::endl;
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
 	}
-	removeUser( getUser( userSocket ) );
 }
 
 // WHO command

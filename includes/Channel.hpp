@@ -18,7 +18,9 @@
 #include <algorithm>
 #include <map>
 
-#include "./User.hpp"
+#include "User.hpp"
+
+class User;
 
 class Channel {
 	public:
@@ -56,7 +58,7 @@ class Channel {
 		void									addInvite( User* newInvite);
 
 		//Removers
-		void									ejectUser(User* user);
+		void									ejectUser( User* user);
 		void									ejectOperator(User* user);
 		void									removeInvite(User* invite);
 

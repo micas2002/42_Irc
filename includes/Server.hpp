@@ -106,7 +106,7 @@ class Server
 		void							whoChannel( int userSocket, const std::string& channelName );
 		void							whoUser( int userSocket, const std::string& username );
 
-		void							kickCommand( int userSocket, std::string& command );
+		void							kickCommand( int userSocket, const std::string& command );
 
 		void							quitCommand( int userSocket, std::string& command );
 

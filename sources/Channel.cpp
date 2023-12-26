@@ -89,7 +89,9 @@ void	Channel::addInvite( User* newInvite ) {
 }
 
 void	Channel::ejectUser( User* user ) { _users.erase( user->getUsername() ); }
+
 void	Channel::ejectOperator( User* user ) { _operators.erase( user->getUsername() ); }
+
 void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getUsername() ); }
 
 void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) {

@@ -34,7 +34,6 @@ void		ServerMessages::ERR_NOTEXTTOSEND( const int socketFd, const std::string& c
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
-
 // ERR_NONICKNAMEGIVEN 431
 void	ServerMessages::ERR_NONICKNAMEGIVEN( const int socketFd, const std::string& clientName ) {
 	std::string	message( "Tijolinhos 431 " + clientName  + " :No nickname given\r\n" );

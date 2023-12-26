@@ -38,11 +38,11 @@ const std::string&	Channel::getName() const { return ( _name ); }
 
 const std::string&	Channel::getTopic() const { return ( _topic ); }
 
-const std::map<std::string, User*>&	Channel::getUsers() const { return ( _users ); }
+std::map<std::string, User*>&	Channel::getUsers() { return ( _users ); }
 
-const std::map<std::string, User*>&	Channel::getOperators() const { return ( _operators ); }
+std::map<std::string, User*>&	Channel::getOperators() { return ( _operators ); }
 
-const std::map<std::string, User*>&	Channel::getInvites() const { return ( _inviteList ); }
+std::map<std::string, User*>&	Channel::getInvites() { return ( _inviteList ); }
 
 User*	Channel::getUser( const std::string& nickname ) {
 	std::map<std::string, User*>::iterator	it = _operators.find( nickname );

@@ -83,7 +83,10 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 	channel.removeInvite( user );
 	channel.addUser( user );
 
-	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
+	std::map<std::string, User*>::iterator	iter = channel.getUsers().begin();
+	for ( ; iter != channel.getUsers().end(); ++iter ) {
+		ServerMessages::JOIN_MESSAGE( iter->second->getSocketFd(), user, channelName );
+	}
 }
 
 // PASS command

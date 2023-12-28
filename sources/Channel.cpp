@@ -64,8 +64,20 @@ int		Channel::getUserCount() const { return ( _users.size() ); }
 
 bool	Channel::getInviteOnly() const { return ( _inviteOnly ); }
 
-bool	Channel::isInvited( User* user ) const {
-	if ( _inviteList.find( user->getUsername() ) != _inviteList.end() )
+bool	Channel::isInvited( std::string& user ) const {
+	if ( _inviteList.find( user ) != _inviteList.end() )
+		return ( true );
+	return ( false );
+}
+
+bool	Channel::isUser( std::string& user ) const {
+	if ( _users.find( user ) != _users.end() )
+		return ( true );
+	return ( false );
+}
+
+bool	Channel::isOperator( std::string& user ) const {
+	if ( _operators.find( user ) != _operators.end() )
 		return ( true );
 	return ( false );
 }

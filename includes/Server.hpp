@@ -93,6 +93,9 @@ class Server
 		void							userCommand( int userSocket, std::string& command );
 		void							messageComand( int userSocket, std::string& command );
 		void							whoCommand( int userSocket, std::string& command );
+		void							kickCommand( int userSocket, const std::string& command );
+		void							quitCommand( int userSocket, std::string& command );
+		void							inviteCommand( int userSocket, std::string& command );
 
 		// JOIN	
 		bool							isValidChannelName( std::string& channelName );
@@ -105,10 +108,6 @@ class Server
 		// WHO
 		void							whoChannel( int userSocket, const std::string& channelName );
 		void							whoUser( int userSocket, const std::string& username );
-
-		void							kickCommand( int userSocket, const std::string& command );
-
-		void							quitCommand( int userSocket, std::string& command );
 
 	private:
 		std::map<std::string, User>		_users;

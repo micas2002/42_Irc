@@ -47,7 +47,9 @@ class Channel {
 		int										getUserLimit() const;
 		int										getUserCount() const;
 		bool									getInviteOnly() const;
-		bool									isInvited( User* user ) const;
+		bool									isInvited( const std::string& user ) const;
+		bool									isUser( const std::string& user ) const;
+		bool									isOperator( const std::string& user ) const;	
 
 		//Setters
 		void									setPassword( std::string password );
@@ -55,7 +57,7 @@ class Channel {
 		void									setUserLimit( int userLimit );
 		void									addUser( User* newUser );
 		void									addOperator( User* newOperator );
-		void									addInvite( User* newInvite);
+		void									addInvite( User* newInvite );
 
 		//Removers
 		void									ejectUser( User* user);
@@ -76,5 +78,4 @@ class Channel {
 		std::map<std::string, User*>			_users;
 		std::map<std::string, User*>			_operators;
 		std::map<std::string, User*>			_inviteList;
-		
 };

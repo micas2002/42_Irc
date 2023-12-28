@@ -113,6 +113,7 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 			break;
 		
 		case INVITE:
+			inviteCommand( userSocket, command );
 			break;
 
 		case TOPIC:

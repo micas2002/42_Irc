@@ -39,7 +39,7 @@ class Channel {
 		const std::string&						getPassword() const;
 		const std::string&						getName() const;
 		const std::string&						getTopic() const;
-  		User*									getUser( const std::string& nickname );
+  	User*									getUser( const std::string& nickname );
 		User*									getOperator( const std::string& nickname );
 		std::map<std::string, User*>&			getUsers();
 		std::map<std::string, User*>&			getOperators();
@@ -55,6 +55,8 @@ class Channel {
 		void									setPassword( std::string password );
 		void									setTopic( std::string topic );
 		void									setUserLimit( int userLimit );
+		void									setInviteOnly( bool inviteOnly );
+		void									setTopicRestriction( bool topicRestriction );
 		void									addUser( User* newUser );
 		void									addOperator( User* newOperator );
 		void									addInvite( User* newInvite );
@@ -66,6 +68,7 @@ class Channel {
 
 		//Functions
 		void									sendMessage( std::string serverMessage, std::string senderNick );
+		bool									isOperator( User* user );
 
 	private:
 		const std::string						_name;

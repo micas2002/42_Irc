@@ -53,6 +53,8 @@ class ServerMessages {
 		static void		RPL_INVITING( int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// RPL_WHOREPLY 352
 		static void		RPL_WHOREPLY( int socketFd, User* user,  const std::string& sender, const std::string& target );
+		// RPL_USER_MODES
+		static void		RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes );
 
 		// JOIN Message
 		static void		JOIN_MESSAGE( int socketFd, User* user, const std::string& channelName );

@@ -120,6 +120,7 @@ class Server
 		// MODE
 		void							modeCommand( int userSocket, std::string& command );
 		void							modeChannel( User* sender, std::vector< std::string > params, Channel* ch );
+		void							modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments );
 		void							modeInvite( Channel* channel, std::string flag, User* sender );
 		void							modeTopic( Channel* channel, std::string flag, User* sender );
 		void							modeKey( Channel* channel, std::string flag, User* sender, std::string newKey );

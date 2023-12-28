@@ -45,6 +45,7 @@ class Channel {
 		int										getUserLimit() const;
 		int										getUserCount() const;
 		bool									getInviteOnly() const;
+		std::string								getModes() const;
 		bool									isInvited( User* user ) const;
 
 		//Setters

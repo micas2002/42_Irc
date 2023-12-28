@@ -119,3 +119,9 @@ void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& 
 
   send( socketFd, message.c_str(), message.size(), 0 );
 }
+
+// RPL_USER_MODES 324
+void	ServerMessages::RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes ) {
+	std::string message( "Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
+	send( socketFd, message.c_str(),  message.size(), 0 );
+}

@@ -57,6 +57,26 @@ int		Channel::getUserCount() const { return ( _users.size() ); }
 
 bool	Channel::getInviteOnly() const { return ( _inviteOnly ); }
 
+std::string	Channel::getModes() const {
+	std::string finalModes = "+";
+	std::string addOns = " ";
+
+	if ( _inviteOnly )
+		finalModes += 'i';
+	else if ( _topicRestriction )
+		finalModes += 't';
+	else if ( _channelPassword.length() > 0 ) {
+		finalModes += 'k';
+		addOns += _channelPassword + " ";
+	}
+	else if ( _userLimit != -1 ) {
+		finalModes += 'l';
+		addOns += _userLimit;
+	}
+
+	return ( finalModes + addOns );
+}
+
 bool	Channel::isInvited( User* user ) const {
 	if ( _inviteList.find( user->getUsername() ) != _inviteList.end() )
 		return ( true );

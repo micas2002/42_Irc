@@ -35,8 +35,9 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 			continue ;
 		}
 
-		if ( _channels.find( channelName ) == _channels.end() ) 
+		if ( _channels.find( channelName ) == _channels.end() ) {
 			createNewChannel( channelName, user );
+		}
 		else 
 			addUserToChannel( channelName, user, channelsKeys );
 	}
@@ -53,7 +54,6 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
-
 	// send JOIN message to user
 
 	// PUt on REPLIES in SErverMessages
@@ -345,35 +345,33 @@ void	Server::modeCommand( int userSocket, std::string& command ) {
 
 	if ( params.at( 1 ).find( '#' ) != std::string::npos ) {
 		Channel*	ch = getChannel( params.at( 1 ) );
-		if (!ch);
-			// Error message
-		
-	}
-	else {
-		//MODE user
+		if (!ch) {
+			ServerMessages::ERR_NOSUCHCHANNEL( userSocket, sender->getNickname(), params.at( 1 ) );
+			return ;
+		}
+		modeChannel( sender, params, ch );
 	}
 
 }
 
 void	Server::modeChannel( User* sender, std::vector< std::string > params, Channel* ch ) {
 	if ( params.size() == 2 ) {
-		// Send back channel modes
-		// :cadmium.libera.chat 324 duartebaeta #libera +CPTntf #libera-overflow
+		ServerMessages::RPL_USER_MODES( sender->getSocketFd(), sender, ch->getName(), ch->getModes() );
 	}
 	else {
-		std::string	rawModes = params.at( 2 );
-		std::vector< std::string > modeChanges;
-		if ( rawModes.length() % 2 == 0 ) {
-			for ( size_t i = 0; i < rawModes.length(); i += 2 ) {
-				modeChanges.push_back( rawModes.substr( i, 2 ) );
+		std::string					rawModes = params.at( 2 );
+		std::vector< std::string >	modeChanges;
+		std::string					modifier = "+";
+		for ( size_t i = 0; i < rawModes.length(); i++ ) {
+			if ( rawModes[i] == '+' || rawModes[i] == '-' ) {
+				modifier[0] = rawModes[i];
+				continue ;
 			}
+			modeChanges.push_back( (modifier + rawModes[i]) );
 		}
-		else
-			std::cout << "Placeholder error" << std::endl;
+		if ( modeChanges.size() == 0 )
+			ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
 
-		if ( !ch->isOperator( sender ) ) {
-			// Error message
-		}
 		int	paramsCounter = 3;
 		std::string argument;
 		for ( std::vector< std::string >::iterator it = modeChanges.begin(); it != modeChanges.end(); it++ ) {
@@ -392,7 +390,8 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 						argument = params.at( paramsCounter++ );
 						modeKey( ch, *it, sender, argument );
 					} catch ( std::out_of_range &e ) {
-						//Error
+						ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+						return ;
 					}
 					break;
 
@@ -401,16 +400,22 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 						argument = params.at( paramsCounter++ );
 						modeOperator( ch, *it, sender, argument );
 					} catch ( std::out_of_range &e ) {
-						//Error
+						ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+						return ;
 					}
 					break;
 
 				case MODE_L:
+					if ( it->find( '-' ) != std::string::npos ) {
+						modeLimit( ch, *it, sender, "" );
+						break;
+					}
 					try {
 						argument = params.at( paramsCounter++ );
 						modeLimit( ch, *it, sender, argument );
 					} catch ( std::out_of_range &e ) {
-						//Error
+						ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+						return ;
 					}
 					break;
 
@@ -419,4 +424,51 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 			}
 		}
 	}
+}
+
+void	Server::modeInvite( Channel* ch, std::string flag, User* user ) {
+	flag.find( '+' ) != std::string::npos ? ch->setInviteOnly( true ) : ch->setInviteOnly( false );
+	modeMessage( user, ch->getName(), flag, "" );
+}
+
+void	Server::modeTopic( Channel* ch, std::string flag, User* user ) {
+	flag.find( '+' ) != std::string::npos ? ch->setTopicRestriction( true ) : ch->setTopicRestriction( false ); 
+	modeMessage( user, ch->getName(), flag, "" );	
+}
+
+void	Server::modeKey( Channel* ch, std::string flag, User* user, std::string newKey ) {
+	if ( flag.find( '+' ) != std::string::npos )
+		ch->setPassword( "" );
+	else
+		ch->setPassword( newKey );
+	modeMessage( user, ch->getName(), flag, "" );
+}
+
+void	Server::modeOperator( Channel *channel, std::string flag, User* sender, std::string receiver ) {
+	User*	rec = getUser( receiver );
+	if ( !rec )
+		return ;
+	if ( flag.find( '+' ) != std::string::npos )
+		channel->addOperator( rec );
+	else
+		channel->ejectOperator( rec );
+	modeMessage( sender, channel->getName(), flag, receiver );
+}
+
+void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::string limit ) {
+	int	newLimit;
+	if ( limit.length() == 0 )
+		newLimit = -1;
+	else {	
+		newLimit = atoi( limit.c_str() );
+		if ( newLimit <= 0 )
+			return ;
+	}
+	channel->setUserLimit( newLimit );
+	modeMessage( sender, channel->getName(), flag, limit );
+}
+
+void	Server::modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments ) {
+	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channel_name + modes + arguments + "\r\n" );
+	send( user->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
 }

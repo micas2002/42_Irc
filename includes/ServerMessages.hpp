@@ -39,6 +39,8 @@ class ServerMessages {
 		static void		RPL_ENDOFWHO( int socketFd, const std::string& clientName, const std::string& mask );
 		// RPL_WHOREPLY 352
 		static void		RPL_WHOREPLY( int socketFd, User* user,  const std::string& sender, const std::string& target );
+		// RPL_USER_MODES
+		static void		RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes );
 
 	private:
 		ServerMessages();

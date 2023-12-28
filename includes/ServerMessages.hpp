@@ -25,6 +25,8 @@ class ServerMessages {
 		static void		ERR_USERNOTINCHANNEL( const int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// ERR_NOTONCHANNEL 442
 		static void		ERR_NOTONCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName );
+		// ERR_USERONCHANNEL 443
+		static void		ERR_USERONCHANNEL( const int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// ERR_NOTREGISTERED 451
 		static void		ERR_NOTREGISTERED( const int socketFd, const std::string& clientName );
 		// ERR_NEEDMOREPARAMS 461

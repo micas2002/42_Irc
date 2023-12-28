@@ -62,6 +62,13 @@ void	ServerMessages::ERR_NOTONCHANNEL( const int socketFd, const std::string& cl
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+// ERR_USERONCHANNEL 443
+void	ServerMessages::ERR_USERONCHANNEL( const int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName ) {
+	std::string	message( "Tijolinhos 443 " + clientName + " " + nick + " " + channelName + " :is already on channel\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
 // ERR_NOTREGISTERED 451
 void	ServerMessages::ERR_NOTREGISTERED( const int socketFd, const std::string& clientName ) {
 	std::string	message( "Tijolinhos 451 " + clientName + " :You have not registered\r\n" );

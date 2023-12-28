@@ -19,7 +19,7 @@ class User
 		~User();
 
 		// Operators
-		User&							operator = (const User& assiign);
+		User&								operator = (const User& assiign);
 
 		//Getters
 		std::map<std::string, Channel*>&	getChannels();

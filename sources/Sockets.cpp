@@ -117,8 +117,12 @@ void Server::handleClientData( int clientSocket ) {
 		FD_CLR( clientSocket, &_master ) ; // remove fd from master set
 		return;
 	}
+	_commandInput[clientSocket] += buffer;
+	if ( strchr( buffer, '\n' ) == NULL )
+		return;
+
 	// we got some data from a client
-	std::string command( buffer );
+	std::string command( _commandInput[clientSocket] );
 
 	// command.erase( --command.end() );
 	std::vector<std::string> parameters;
@@ -126,11 +130,9 @@ void Server::handleClientData( int clientSocket ) {
 	parameters = splitByCharacter( command ,  '\n' );
 
 	for ( std::vector<std::string>::iterator it = parameters.begin(); it != parameters.end(); it++ ) {
-		it->erase( it->find( '\r' ) );
+		if ( it->find( '\r' ) != std::string::npos )
+			it->erase( it->find( '\r' ) );
 		selectCommand( clientSocket, *it );
 	}
-	// for( int index = 3; index <= _maxSocketFd; index++ ) {// send to everyone except the listener and ourselves!
-	// 	if ( FD_ISSET( index, &_master ) && index != _maxSocketFd && index != clientSocket && send( index, buffer, numberOfBytes, 0 ) == -1 )
-	// 		perror("send");
-	// }
+	_commandInput[clientSocket] = "";
 }

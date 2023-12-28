@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <sys/types.h>
@@ -111,6 +112,7 @@ class Server
 
 	private:
 		std::map<std::string, User>		_users;
+		std::map<int, std::string>		_commandInput;
 		std::map<int, std::string>		_usersBySocket;
 		std::map<std::string, Channel>	_channels;
 		std::string						_serverPassword;

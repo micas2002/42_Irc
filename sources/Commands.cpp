@@ -296,6 +296,7 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 		channel = getChannel( chanIt->first );
 		channel->ejectUser( user );
 	}
+	_commandInput.erase( userSocket );
 
 	removeUser( getUser( userSocket ) ); // Removes user from server
 
@@ -305,6 +306,8 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 		std::cout <<  it->second.getSocketFd() << std::endl;
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
 	}
+	close( userSocket );	// close the fd!
+	FD_CLR( userSocket, &_master ) ; // remove fd from master set
 }
 
 // WHO command

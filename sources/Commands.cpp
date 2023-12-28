@@ -73,7 +73,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		return ;
 	}
 	if ( channel.getInviteOnly() == true ) {
-		if ( channel.isInvited( user ) == false ) {
+		if ( channel.isInvited( user->getNickname() ) == false ) {
 			ServerMessages::ERR_INVITEONLYCHAN( user->getSocketFd(), user->getNickname(), channelName ); // ERR_INVITEONLYCHAN 473
 			return ;
 		}
@@ -358,4 +358,47 @@ void	Server::whoUser( int userSocket, const std::string& username ) {
 		ServerMessages::RPL_WHOREPLY( userSocket, target, user->getNickname(), username ); // RPL_WHOREPLY 352
 	}
 	ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), username ); // RPL_ENDOFWHO 315
+}
+
+// INVITE command
+void	Server::inviteCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+	if ( parameters.size() < 3 ) {
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), parameters.at( 0 ) ); // ERR_NEEDMOREPARAMS 461
+		return ;
+	}
+
+	Channel* channel = getChannel( parameters.at( 2 ) );
+	if ( channel == NULL ) {
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 2 ) ); // ERR_NOSUCHCHANNEL 403
+		return ;
+	}
+
+	if ( channel->isUser( user->getNickname() ) == false ) {
+		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 2 ) ); // ERR_NOTONCHANNEL 442
+		return ;
+	}
+
+	if ( channel->isOperator( user->getNickname() ) == false ) {
+		ServerMessages::ERR_CHANOPRIVSNEEDED( userSocket, user->getNickname(), parameters.at( 2 ) ); // ERR_CHANOPRIVSNEEDED 482
+		return ;
+	}
+
+	if ( channel->isUser( parameters.at( 1 ) ) == true ) {
+		ServerMessages::ERR_USERNOTINCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ), parameters.at( 2 ) ); // ERR_USERNOTINCHANNEL 441
+		return ;
+	}
+
+	User*	target = getUser( parameters.at( 1 ) );
+	if ( target == NULL ) {
+		ServerMessages::ERR_NOSUCHNICK( userSocket, user->getNickname(), parameters.at( 1 ) ); // ERR_NOSUCHNICK 401
+		return ;
+	}
+
+	channel->addInvite( target );
+	ServerMessages::RPL_INVITING( userSocket, user->getNickname(), target->getNickname(), channel->getName() ); // RPL_INVITING 341
+	ServerMessages::INVITE_MESSAGE( target->getSocketFd(), user, target->getNickname(), channel->getName() ); // INVITE_MESSAGE
 }

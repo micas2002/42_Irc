@@ -13,6 +13,7 @@ User::User( const User& copy ) {
 	_nickname = copy._nickname;
 	_username = copy._username;
 	_socketFd = copy._socketFd;
+	_ip = copy._ip;
 	_passwordStatus = copy._passwordStatus;
 	_usernameStatus = copy._usernameStatus;
 	_nicknameStatus = copy._nicknameStatus;
@@ -27,6 +28,7 @@ User&	User::operator=( const User& copy ) {
 		_nickname = copy._nickname;
 		_username = copy._username;
 		_socketFd = copy._socketFd;
+		_ip = copy._ip;
 		_passwordStatus = copy._passwordStatus;
 		_usernameStatus = copy._usernameStatus;
 		_nicknameStatus = copy._nicknameStatus;
@@ -36,6 +38,9 @@ User&	User::operator=( const User& copy ) {
 }
 
 // Getters
+
+std::map<std::string, Channel*>&	User::getChannels() { return ( _channels ); }
+
 const std::string&	User::getNickname() const { return ( _nickname ); }
 
 const std::string&	User::getUsername() const { return ( _username ); }
@@ -69,8 +74,19 @@ void	User::setNicknameStatusTrue() { _nicknameStatus = true; }
 
 void	User::setIsAuthenticatedTrue() { _isAuthenticated = true; }
 
+void	User::addChannel( const std::string& channelName, Channel* channel ) {
+	if ( _channels.find( channelName ) == _channels.end() )
+		_channels.insert( std::pair<std::string, Channel*>( channelName, channel ) );
+}
+
+void	User::removeChannel( const std::string& channelName ) {
+	if ( _channels.find( channelName ) != _channels.end() ) {
+		_channels.erase( channelName );
+	}
+}
+
 std::string	User::getMessagePrefix() const {
-	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + "localhost " );
+	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + _ip +" " );
 	return ( messagePrefix );
 }
 

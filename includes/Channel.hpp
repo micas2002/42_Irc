@@ -18,7 +18,9 @@
 #include <algorithm>
 #include <map>
 
-#include "./User.hpp"
+#include "User.hpp"
+
+class User;
 
 class Channel {
 	public:
@@ -37,16 +39,17 @@ class Channel {
 		const std::string&						getPassword() const;
 		const std::string&						getName() const;
 		const std::string&						getTopic() const;
-		User*									getUser( const std::string& nickname );
+  	User*									getUser( const std::string& nickname );
 		User*									getOperator( const std::string& nickname );
-		const std::map<std::string, User*>&		getUsers() const;
-		const std::map<std::string, User*>&		getOperators() const;
-		const std::map<std::string, User*>&		getInvites() const;
+		std::map<std::string, User*>&			getUsers();
+		std::map<std::string, User*>&			getOperators();
+		std::map<std::string, User*>&			getInvites();
 		int										getUserLimit() const;
 		int										getUserCount() const;
 		bool									getInviteOnly() const;
-		std::string								getModes() const;
-		bool									isInvited( User* user ) const;
+		bool									isInvited( const std::string& user ) const;
+		bool									isUser( const std::string& user ) const;
+		bool									isOperator( const std::string& user ) const;	
 
 		//Setters
 		void									setPassword( std::string password );
@@ -56,10 +59,10 @@ class Channel {
 		void									setTopicRestriction( bool topicRestriction );
 		void									addUser( User* newUser );
 		void									addOperator( User* newOperator );
-		void									addInvite( User* newInvite);
+		void									addInvite( User* newInvite );
 
 		//Removers
-		void									ejectUser(User* user);
+		void									ejectUser( User* user);
 		void									ejectOperator(User* user);
 		void									removeInvite(User* invite);
 
@@ -78,5 +81,4 @@ class Channel {
 		std::map<std::string, User*>			_users;
 		std::map<std::string, User*>			_operators;
 		std::map<std::string, User*>			_inviteList;
-		
 };

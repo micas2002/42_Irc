@@ -2,10 +2,17 @@
 
 Channel::Channel() : _name( "" ), _userLimit( -1 ) {}
 
-Channel::Channel( std::string name ) : _name( name ) {}
+Channel::Channel( std::string name ) : _name( name ), _userLimit( -1 ) {}
 
-Channel::Channel( const Channel& copy ) {
-	*this = copy;
+Channel::Channel( const Channel& copy ): _name(copy._name) {
+	_channelPassword = copy._channelPassword;
+	_topic = copy._topic;
+	_userLimit = copy._userLimit;
+	_inviteOnly = copy._inviteOnly;
+	_topicRestriction = copy._topicRestriction;
+	_users = copy._users;
+	_operators = copy._operators;
+	_inviteList = copy._inviteList;
 }
 
 Channel::~Channel() {}
@@ -31,11 +38,11 @@ const std::string&	Channel::getName() const { return ( _name ); }
 
 const std::string&	Channel::getTopic() const { return ( _topic ); }
 
-const std::map<std::string, User*>&	Channel::getUsers() const { return ( _users ); }
+std::map<std::string, User*>&	Channel::getUsers() { return ( _users ); }
 
-const std::map<std::string, User*>&	Channel::getOperators() const { return ( _operators ); }
+std::map<std::string, User*>&	Channel::getOperators() { return ( _operators ); }
 
-const std::map<std::string, User*>&	Channel::getInvites() const { return ( _inviteList ); }
+std::map<std::string, User*>&	Channel::getInvites() { return ( _inviteList ); }
 
 User*	Channel::getUser( const std::string& nickname ) {
 	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
@@ -57,6 +64,24 @@ int		Channel::getUserCount() const { return ( _users.size() ); }
 
 bool	Channel::getInviteOnly() const { return ( _inviteOnly ); }
 
+bool	Channel::isInvited( const std::string& user ) const {
+	if ( _inviteList.find( user ) != _inviteList.end() )
+		return ( true );
+	return ( false );
+}
+
+bool	Channel::isUser( const std::string& user ) const {
+	if ( _users.find( user ) != _users.end() )
+		return ( true );
+	return ( false );
+}
+
+bool	Channel::isOperator( const std::string& user ) const {
+	if ( _operators.find( user ) != _operators.end() )
+		return ( true );
+	return ( false );
+}
+
 std::string	Channel::getModes() const {
 	std::string finalModes = "+";
 	std::string addOns = " ";
@@ -77,12 +102,6 @@ std::string	Channel::getModes() const {
 	return ( finalModes + addOns );
 }
 
-bool	Channel::isInvited( User* user ) const {
-	if ( _inviteList.find( user->getUsername() ) != _inviteList.end() )
-		return ( true );
-	return ( false );
-}
-
 void	Channel::setPassword( std::string password ) { _channelPassword = password; }
 
 void	Channel::setTopic( std::string topic ) { _topic = topic; }
@@ -98,15 +117,17 @@ void	Channel::addUser( User* newUser ) {
 }
 
 void	Channel::addOperator( User* newOperator ) { 
-	_users.insert( std::pair<std::string, User*>( ( newOperator->getNickname() ), newOperator ) );
+	_operators.insert( std::pair<std::string, User*>( ( newOperator->getNickname() ), newOperator ) );
 }
 
 void	Channel::addInvite( User* newInvite ) { 
-	_users.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
+	_inviteList.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
 }
 
 void	Channel::ejectUser( User* user ) { _users.erase( user->getUsername() ); }
+
 void	Channel::ejectOperator( User* user ) { _operators.erase( user->getUsername() ); }
+
 void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getUsername() ); }
 
 void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) {

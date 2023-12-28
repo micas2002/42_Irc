@@ -13,10 +13,24 @@ ServerMessages&	ServerMessages::operator = ( const ServerMessages& assign ) {
 }
 
 // ERRORS
+// ERR_NOSUCHNICK 401
+void		ServerMessages::ERR_NOSUCHNICK( const int socketFd, const std::string& clientName, const std::string& nickname ) {
+	std::string message( " Tijolinhos 401 " + clientName + " " + nickname + " :No such nick/channel\r\n" );
+
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
 // ERR_NOSUCHCHANNEL 403
 void	ServerMessages::ERR_NOSUCHCHANNEL( const int socketFd, const std::string& clientName, const std::string& channelName ) {
 	std::string	message( "Tijolinhos 403 " + clientName + " " + channelName + " :No such channel\r\n" );
 	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+// ERR_NOTEXTTOSEND 412
+void		ServerMessages::ERR_NOTEXTTOSEND( const int socketFd, const std::string& clientName ) {
+	std::string message ( "Tijolinhos 412 " + clientName + " :No text to send\r\n");
+
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
@@ -48,6 +62,19 @@ void	ServerMessages::ERR_NOTONCHANNEL( const int socketFd, const std::string& cl
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+// ERR_USERONCHANNEL 443
+void	ServerMessages::ERR_USERONCHANNEL( const int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName ) {
+	std::string	message( "Tijolinhos 443 " + clientName + " " + nick + " " + channelName + " :is already on channel\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+// ERR_NOTREGISTERED 451
+void	ServerMessages::ERR_NOTREGISTERED( const int socketFd, const std::string& clientName ) {
+	std::string	message( "Tijolinhos 451 " + clientName + " :You have not registered\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
 // ERR_NEEDMOREPARAMS 461
 void	ServerMessages::ERR_NEEDMOREPARAMS( const int socketFd, const std::string& clientName, const std::string& command ) {
 	std::string	message( "Tijolinhos 461 " + clientName + " " + command + " :Not enough parameters\r\n" );
@@ -112,6 +139,19 @@ void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, 
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+// RPL_USER_MODES 324
+void	ServerMessages::RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes ) {
+	std::string message( "Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
+	send( socketFd, message.c_str(),  message.size(), 0 );
+}
+
+// RPL_INVITING 341
+void	ServerMessages::RPL_INVITING( int socketFd, const std::string& clientName, const std::string& nickname, const std::string& channelName ) {
+	std::string message( "Tijolinhos 341 " + clientName + " " + nickname + " " + channelName + "\r\n" );
+
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
 // RPL_WHOREPLY 352
 void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& sender, const std::string& target ) {
 	std::string message( "Tijolinhos 352 " + sender + " " + target + " " + user->getUsername() \
@@ -120,8 +160,18 @@ void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& 
   send( socketFd, message.c_str(), message.size(), 0 );
 }
 
-// RPL_USER_MODES 324
-void	ServerMessages::RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes ) {
-	std::string message( "Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
-	send( socketFd, message.c_str(),  message.size(), 0 );
+// JOIN_MESSAGE
+void	ServerMessages::JOIN_MESSAGE( int socketFd, User* user, const std::string& channelName ) {
+	std::string	message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
+		+ " JOIN " + channelName + "\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+// INVITE_MESSAGE
+void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName ) {
+	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
+		+ " INVITE " + nick + " :" + channelName + "\r\n" );
+
+	send( socketFd, message.c_str(), message.size(), 0 );
 }

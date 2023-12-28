@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <sys/types.h>
@@ -77,7 +78,7 @@ class Server
 		void							addChannel( Channel& channel );
 
 		// Removers	
-		void							removeUser( User& user );
+		void							removeUser( User* user );
 
 		std::vector<std::string>		splitByCharacter( const std::string& input, char c );
 
@@ -101,9 +102,11 @@ class Server
 		void							userCommand( int userSocket, std::string& command );
 		void							messageComand( int userSocket, std::string& command );
 		void							whoCommand( int userSocket, std::string& command );
+		void							kickCommand( int userSocket, const std::string& command );
+		void							quitCommand( int userSocket, std::string& command );
+		void							inviteCommand( int userSocket, std::string& command );
 
-		// JOIN	
-		//void							joinCommand( int userSocket, std::string& command );
+		// JOIN
 		bool							isValidChannelName( std::string& channelName );
 		void							createNewChannel( std::string& channelName, User* user );
 		void							addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
@@ -114,8 +117,6 @@ class Server
 		// WHO
 		void							whoChannel( int userSocket, const std::string& channelName );
 		void							whoUser( int userSocket, const std::string& username );
-
-		void							kickCommand( int userSocket, std::string& command );
 
 		// MODE
 		void							modeCommand( int userSocket, std::string& command );
@@ -129,6 +130,7 @@ class Server
 
 	private:
 		std::map<std::string, User>		_users;
+		std::map<int, std::string>		_commandInput;
 		std::map<int, std::string>		_usersBySocket;
 		std::map<std::string, Channel>	_channels;
 		std::string						_serverPassword;

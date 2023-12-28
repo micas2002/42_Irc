@@ -1,7 +1,6 @@
 #include "Server.hpp"
 
 // Join command
-
 void	Server::joinCommand( int userSocket, std::string& command ) {
 	std::vector<std::string>	parameters;
 	std::vector<std::string>	channelsKeys;
@@ -10,7 +9,7 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 	User*						user = getUser( userSocket );
 
 	if ( user->getIsAuthenticated() == false ) {
-		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 ); // what error???
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 
@@ -54,21 +53,18 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	channel.addUser( user );
 	channel.addOperator( user );
 	addChannel( channel );
-	// send JOIN message to user
+	user->addChannel( channelName, &_channels[channelName]);
 
-	// PUt on REPLIES in SErverMessages
-	std::string joinMessage( user->getMessagePrefix() + "JOIN " + channelName + "\r\n" );
-	
-	send ( user->getSocketFd(), joinMessage.c_str(), joinMessage.length(), 0 );
+	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
 }
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
 	Channel&			channel = _channels[channelName];
-	std::string&		key = channelsKeys.at( 0 );
+	std::string			key;
 	const std::string&	channelPassword = channel.getPassword();
 
 	if ( channelPassword.empty() == false ) {
-		if ( key != channelPassword ) {
+		if ( channelsKeys.size() == 0 || ( key = channelsKeys.at( 0 ) ) != channelPassword ) {
 			ServerMessages::ERR_BADCHANNELKEY( user->getSocketFd(), user->getNickname(), channelName ); // ERR_BADCHANNELKEY 475
 			return ;
 		}
@@ -78,7 +74,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		return ;
 	}
 	if ( channel.getInviteOnly() == true ) {
-		if ( channel.isInvited( user ) == false ) {
+		if ( channel.isInvited( user->getNickname() ) == false ) {
 			ServerMessages::ERR_INVITEONLYCHAN( user->getSocketFd(), user->getNickname(), channelName ); // ERR_INVITEONLYCHAN 473
 			return ;
 		}
@@ -88,13 +84,12 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 		channelsKeys.erase( channelsKeys.begin() );
 	channel.removeInvite( user );
 	channel.addUser( user );
+	user->addChannel( channelName, &channel );
 
-	// send JOIN message to user
-
-	// PUt on REPLIES in SErverMessages
-	std::string joinMessage( user->getMessagePrefix() + "JOIN " + channelName + "\r\n" );
-	
-	send ( user->getSocketFd(), joinMessage.c_str(), joinMessage.length(), 0 );
+	std::map<std::string, User*>::iterator	iter = channel.getUsers().begin();
+	for ( ; iter != channel.getUsers().end(); ++iter ) {
+		ServerMessages::JOIN_MESSAGE( iter->second->getSocketFd(), user, channelName );
+	}
 }
 
 // PASS command
@@ -102,7 +97,7 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
 	
 	if ( user->getPasswordStatus() == true ) {
-		send ( userSocket, "PASS: You may not reregister\n", 29, 0);
+		ServerMessages::ERR_ALREADYREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 
@@ -111,18 +106,16 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
-		send( userSocket, "PASS: Not enough parameters\n", 28, 0 );
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), command );
 		return;
 	}
 
 	if ( checkIfPasswordsMatch( parameters.at( 1 ) ) == false ) {
-		std::cout << SERVER_INCORRECT_PASSWORD << std::endl;
-		send( userSocket, SERVER_INCORRECT_PASSWORD,  56, 0 );
+		ServerMessages::ERR_PASSWDMISMATCH( userSocket, user->getNickname() );
 		return;
 	}
 	user->setPasswordStatusTrue();
 	if ( user->getNicknameStatus() == true && user->getUsernameStatus() == true ) {
-		std::cout << "here\n";
 		user->setIsAuthenticatedTrue();
 	}
 	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
@@ -130,20 +123,24 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 
 // NICK command 
 void	Server::nickCommand( int userSocket, std::string& command ) {
+	User*						user = getUser( userSocket );
 	std::vector<std::string>	parameters;
 	
 	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
-		send( userSocket, "NICK: No nickname given\n", 24, 0 );
+		ServerMessages::ERR_NONICKNAMEGIVEN( userSocket, user->getNickname() );
 		return;
 	}
 
-	User* user = getUser( userSocket );
-
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
+		User	updatedUser( *user );
 
-		user->setNickname( parameters.at( 1 ) );
+		removeUser( user );
+		updatedUser.setNickname( parameters.at( 1 ) );
+		addUser( updatedUser );
+
+		user = getUser( userSocket );
 		if ( user->getNicknameStatus() == false && user->getUsernameStatus() == true
 			&& user->getPasswordStatus() == true ) {
 				user->setIsAuthenticatedTrue();
@@ -153,7 +150,7 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
 	}
 	else
-		send( userSocket, SERVER_NICKNAME_ALREADY_IN_USE, 74, 0 );
+		ServerMessages::ERR_NICKNAMEINUSE( userSocket, user->getNickname(), parameters.at( 1 ) );
 }
 
 // USER command
@@ -161,7 +158,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	User* user = getUser( userSocket );
 
 	if ( user->getUsernameStatus() == true ) {
-		send( userSocket, "USER: You may not reregister\n", 29, 0 );
+		ServerMessages::ERR_ALREADYREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 	
@@ -170,7 +167,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	parameters = splitByCharacter( command, ' ' );
 
 	if ( parameters.size() < 2 ) {
-		send( userSocket, "USER: No username given\n", 24, 0 );
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), command );
 		return;
 	}
 
@@ -188,23 +185,24 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 	std::string			recipient_name;
 	std::string			message;
 
+	// TO DO:
+	// need to implement errors 404, and 411
+
 	if ( sender->getIsAuthenticated() == false ) {
-		send( sender->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		ServerMessages::ERR_NOTREGISTERED( userSocket, sender->getNickname() );
 		return;
 	}
 
 	message = command.substr( command.find( ':' ) + 1 );
 	if ( message.length() == 0 ) {
-		//implement error msg
-		std::cout << "Message error" << std::endl;
+		ServerMessages::ERR_NOTEXTTOSEND( userSocket, sender->getNickname() );
 		return ;
 	}
 	recipient_name = extractNick( command );
 	if ( recipient_name.find('#') != std::string::npos ) {
 		Channel*	recipient = getChannel( recipient_name );
 		if ( recipient == NULL ) {
-			// Implement error msg
-			std::cout << "Recipient channel error" << std::endl;
+			ServerMessages::ERR_NOSUCHNICK( userSocket, sender->getNickname(), recipient_name );
 			return ;
 		}
 
@@ -214,8 +212,7 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 	else {
 		User*	recipient = getUser( recipient_name );
 		if ( recipient == NULL ) {
-			// Implement error msg
-			std::cout << "Recipient user error" << std::endl;
+			ServerMessages::ERR_NOSUCHNICK( userSocket, sender->getNickname(), recipient_name );
 			return ;
 		}
 		std::string	server_message( sender->getMessagePrefix() + "PRIVMSG " + recipient->getNickname() + " :" + message + "\r\n" );
@@ -235,11 +232,12 @@ std::string	Server::extractNick( std::string& message ) {
 	return ( "" );
 }
 
-void	Server::kickCommand( int userSocket, std::string& command ) {
+// KICK command
+void	Server::kickCommand( int userSocket, const std::string& command ) {
 	User*	user = getUser( userSocket );
 
 	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
-		send( user->getSocketFd(), "Server: You must register first\n", 32, 0 );
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
 		return;
 	}
 
@@ -279,15 +277,48 @@ void	Server::kickCommand( int userSocket, std::string& command ) {
 	channel->ejectUser( target );
 }
 
+// QUIT command
+void	Server::quitCommand( int userSocket, std::string& command ) {
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	std::string	message = "QUIT";
+
+	for (std::vector<std::string>::iterator itP = parameters.begin() + 1; itP != parameters.end(); ++itP)
+		message = message + " " + *itP;
+	
+	User*										user = getUser( userSocket );
+	std::map<std::string, Channel*>				channelsMap = user->getChannels();
+	std::map<std::string, Channel*>::iterator	chanIt = channelsMap.begin();
+	Channel*									channel;
+
+	for (; chanIt != channelsMap.end(); ++chanIt ) { // Removes user from channels he is part of
+		channel = getChannel( chanIt->first );
+		channel->ejectUser( user );
+	}
+	_commandInput.erase( userSocket );
+
+	removeUser( getUser( userSocket ) ); // Removes user from server
+
+	std::map<std::string, User>::iterator	it = _users.begin();
+	
+	for (; it != _users.end(); ++it) { // Sending messages to all users not working
+		std::cout <<  it->second.getSocketFd() << std::endl;
+		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
+	}
+	close( userSocket );	// close the fd!
+	FD_CLR( userSocket, &_master ) ; // remove fd from master set
+}
+
 // WHO command
 void	Server::whoCommand( int userSocket, std::string& command ) {
 	User*	user = getUser( userSocket );
-
 	
-	// if ( user->getIsAuthenticated() == false ) {
-	// 	send( userSocket, "Server: You must first register/r/n", 33, 0 );
-	// 	return ;
-	// }
+	if ( user->getIsAuthenticated() == false ) {
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
+		return ;
+	}
 
 	std::vector<std::string>	parameters;
 	parameters = splitByCharacter( command, ' ' );
@@ -332,7 +363,6 @@ void	Server::whoUser( int userSocket, const std::string& username ) {
 	}
 	ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), username ); // RPL_ENDOFWHO 315
 }
-
 
 // MODE Command
 void	Server::modeCommand( int userSocket, std::string& command ) {
@@ -471,4 +501,46 @@ void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::s
 void	Server::modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments ) {
 	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channel_name + modes + arguments + "\r\n" );
 	send( user->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
+
+// INVITE command
+void	Server::inviteCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+	if ( parameters.size() < 3 ) {
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), parameters.at( 0 ) ); // ERR_NEEDMOREPARAMS 461
+		return ;
+	}
+
+	Channel* channel = getChannel( parameters.at( 2 ) );
+	if ( channel == NULL ) {
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 2 ) ); // ERR_NOSUCHCHANNEL 403
+		return ;
+	}
+
+	if ( channel->isUser( user->getNickname() ) == false ) {
+		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 2 ) ); // ERR_NOTONCHANNEL 442
+		return ;
+	}
+
+	if ( channel->isOperator( user->getNickname() ) == false ) {
+		ServerMessages::ERR_CHANOPRIVSNEEDED( userSocket, user->getNickname(), parameters.at( 2 ) ); // ERR_CHANOPRIVSNEEDED 482
+		return ;
+	}
+
+	if ( channel->isUser( parameters.at( 1 ) ) == true ) {
+		ServerMessages::ERR_USERNOTINCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ), parameters.at( 2 ) ); // ERR_USERNOTINCHANNEL 441
+		return ;
+	}
+
+	User*	target = getUser( parameters.at( 1 ) );
+	if ( target == NULL ) {
+		ServerMessages::ERR_NOSUCHNICK( userSocket, user->getNickname(), parameters.at( 1 ) ); // ERR_NOSUCHNICK 401
+		return ;
+	}
+
+	channel->addInvite( target );
+	ServerMessages::RPL_INVITING( userSocket, user->getNickname(), target->getNickname(), channel->getName() ); // RPL_INVITING 341
+	ServerMessages::INVITE_MESSAGE( target->getSocketFd(), user, target->getNickname(), channel->getName() ); // INVITE_MESSAGE
 }

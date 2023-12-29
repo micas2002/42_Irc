@@ -96,6 +96,7 @@ class Server
 		void							kickCommand( int userSocket, const std::string& command );
 		void							quitCommand( int userSocket, std::string& command );
 		void							inviteCommand( int userSocket, std::string& command );
+		void							topicCommand( int userSocket, std::string& command );
 
 		// JOIN	
 		bool							isValidChannelName( std::string& channelName );

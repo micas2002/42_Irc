@@ -402,3 +402,26 @@ void	Server::inviteCommand( int userSocket, std::string& command ) {
 	ServerMessages::RPL_INVITING( userSocket, user->getNickname(), target->getNickname(), channel->getName() ); // RPL_INVITING 341
 	ServerMessages::INVITE_MESSAGE( target->getSocketFd(), user, target->getNickname(), channel->getName() ); // INVITE_MESSAGE
 }
+
+// TOPIC command
+void	Server::topicCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+	std::vector<std::string>	parameters;
+
+	parameters = splitByCharacter( command, ' ' );
+	if ( parameters.size() < 2 ) {
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), parameters.at( 0 ) ); // ERR_NEEDMOREPARAMS 461
+		return ;
+	}
+
+	Channel*	channel = getChannel( parameters.at( 1 ) );
+	if ( channel == NULL ) {
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) ); // ERR_NOSUCHCHANNEL 403
+		return ;
+	}
+
+	if ( channel->isUser( user->getNickname() ) == false ) {
+		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) ); // ERR_NOTONCHANNEL 442
+		return ;
+	}
+}

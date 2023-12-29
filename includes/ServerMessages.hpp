@@ -49,6 +49,8 @@ class ServerMessages {
 		// REPLIES
 		// RPL_ENDOFWHO 315
 		static void		RPL_ENDOFWHO( int socketFd, const std::string& clientName, const std::string& mask );
+		// RPL_NOTOPIC 331
+		static void		RPL_NOTOPIC( int socketFd, const std::string& clientName, const std::string& channelName );
 		// RPL_INVITING 341
 		static void		RPL_INVITING( int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// RPL_WHOREPLY 352

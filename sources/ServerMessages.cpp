@@ -1,6 +1,5 @@
 #include "ServerMessages.hpp"
 
-
 ServerMessages::ServerMessages() {}
 
 ServerMessages::~ServerMessages() {}
@@ -15,7 +14,7 @@ ServerMessages&	ServerMessages::operator = ( const ServerMessages& assign ) {
 // ERRORS
 // ERR_NOSUCHNICK 401
 void		ServerMessages::ERR_NOSUCHNICK( const int socketFd, const std::string& clientName, const std::string& nickname ) {
-	std::string message( " Tijolinhos 401 " + clientName + " " + nickname + " :No such nick/channel\r\n" );
+	std::string message( "Tijolinhos 401 " + clientName + " " + nickname + " :No such nick/channel\r\n" );
 
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
@@ -135,6 +134,20 @@ void	ServerMessages::ERR_CHANOPRIVSNEEDED( const int socketFd, const std::string
 // RPL_ENDOFWHO 315
 void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, const std::string& mask ) {
 	std::string	message( "Tijolinhos 315 " + clientName + " " + mask + " :End of WHO list\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+// RPL_NOTOPIC 331
+void	ServerMessages::RPL_NOTOPIC( int socketFd, const std::string& clientName, const std::string& channelName ) {
+	std::string	message( ":Tijolinhos 331 " + clientName + " " + channelName + " :No topic is set\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+// RPL_TOPIC 332
+void	ServerMessages::RPL_TOPIC( int socketFd, const std::string& clientName, const std::string& channelName, const std::string& topic ) {
+	std::string	message( ":Tijolinhos 332 " + clientName + " " + channelName + " :" + topic + "\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
 }

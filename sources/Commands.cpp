@@ -424,4 +424,23 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) ); // ERR_NOTONCHANNEL 442
 		return ;
 	}
+
+	if ( parameters.size() == 2 ) {
+		const std::string&	topic = channel->getTopic();
+		if ( topic.empty() ) {
+			ServerMessages::RPL_NOTOPIC( userSocket, user->getNickname(), channel->getName() ); // RPL_NOTOPIC 331
+		}
+		else {
+			ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel->getName(), topic ); // RPL_TOPIC 332
+		}
+		return ;
+	}
+
+	if ( channel->getTopicRestriction() && !channel->isOperator( user->getNickname() ) ) {
+		ServerMessages::ERR_CHANOPRIVSNEEDED( userSocket, user->getNickname(), parameters.at( 1 ) ); // ERR_CHANOPRIVSNEEDED 482
+		return ;
+	}
+
+	std::string& topic = parameters.at( 2 );
+	topic.erase( 0, 1 );
 }

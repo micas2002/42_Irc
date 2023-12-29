@@ -275,14 +275,49 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 	}
 
 	channel->ejectUser( target );
-	// std::string comment = ":Because you stink";
+	std::string comment = ":Because you stink ";
 	
-	// if ( parameters.size() > 3 && parameters.at( 3 ).at( 0 ) == ':' ) {
-	// 	comment.clear();
-	// 	for ( std::vector< std::string >::iterator it = parameters.begin() + 3; it != parameters.end(); it++)
-	// 		comment += *it;
-	// } 
-	ServerMessages::KICK_MESSAGE( userSocket, user, target->getNickname(),  channel->getName(), " " );
+	if ( parameters.size() > 3 && parameters.at( 3 ).at( 0 ) == ':' ) {
+		comment.clear();
+		for ( std::vector< std::string >::iterator it = parameters.begin() + 3; it != parameters.end(); it++)
+			comment += *it + " ";
+	}
+	comment.erase(comment.end() - 1);
+	ServerMessages::KICK_MESSAGE( userSocket, user, target->getNickname(),  channel, comment );
+}
+
+// PART command
+void	Server::partCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+
+	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
+		return;
+	}
+
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	if ( parameters.size() < 3 ) { // Checks number of parameters given to the command
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), "KICK");
+		return;
+	}
+
+	if ( _channels.find( parameters.at( 1 ) ) == _channels.end()) { // Checks if channel exists
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	Channel*	channel = getChannel( parameters.at( 1 ) );
+
+	if ( channel->isUser( user->getNickname() ) == false ) { // Checks if user executing command is on the channel
+		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	channel->ejectUser( user );
+	ServerMessages::PART_MESSAGE( userSocket, user,  channel );
 }
 
 // QUIT command

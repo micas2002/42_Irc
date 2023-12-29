@@ -46,7 +46,7 @@ std::map<std::string, User*>&	Channel::getInvites() { return ( _inviteList ); }
 
 User*	Channel::getUser( const std::string& nickname ) {
 	std::map<std::string, User*>::iterator	it = _users.find( nickname );
-	if ( it != _operators.end() )
+	if ( it != _users.end() )
 		return ( it->second );
 	return ( NULL );
 }

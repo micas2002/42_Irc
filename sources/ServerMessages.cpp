@@ -176,8 +176,18 @@ void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
-void	ServerMessages::KICK_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName, const std::string& comment ) {
+// KICK_MESSAGE
+void	ServerMessages::KICK_MESSAGE( int socketFd, User* user, const std::string& nick, Channel* channel, const std::string& comment ) {
 	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
-		+ " KICK " + channelName + " " + nick + " " + comment + "\r\n" );
+		+ " KICK " + channel->getName() + " " + nick + " " + comment + "\r\n" );
 	send( socketFd, message.c_str(), message.size(), 0 );
+	channel->sendMessage( message, user->getNickname() );
+}
+
+// PART_MESSAGE
+void	ServerMessages::PART_MESSAGE( int socketFd, User* user, Channel* channel ) {
+	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
+		+ " PART " + channel->getName() + "\r\n" );
+	send( socketFd, message.c_str(), message.size(), 0 );
+	channel->sendMessage( message, user->getNickname() );
 }

@@ -501,6 +501,7 @@ void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::s
 void	Server::modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments ) {
 	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channel_name + modes + arguments + "\r\n" );
 	send( user->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
+}
 
 // INVITE command
 void	Server::inviteCommand( int userSocket, std::string& command ) {

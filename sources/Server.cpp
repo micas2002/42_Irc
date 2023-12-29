@@ -142,6 +142,10 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 		case WHO:
 			whoCommand( userSocket, command );
 			break;
+
+		case NAMES:
+			namesCommand( userSocket, command );
+			break;
 		
 		default:
 			std::cout << "HASH: " << simpleHash( command ) << std::endl;

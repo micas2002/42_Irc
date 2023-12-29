@@ -275,7 +275,14 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 	}
 
 	channel->ejectUser( target );
-	ServerMessages::KICK_MESSAGE( userSocket, user, target->getNickname(),  channel->getName() );
+	// std::string comment = ":Because you stink";
+	
+	// if ( parameters.size() > 3 && parameters.at( 3 ).at( 0 ) == ':' ) {
+	// 	comment.clear();
+	// 	for ( std::vector< std::string >::iterator it = parameters.begin() + 3; it != parameters.end(); it++)
+	// 		comment += *it;
+	// } 
+	ServerMessages::KICK_MESSAGE( userSocket, user, target->getNickname(),  channel->getName(), " " );
 }
 
 // QUIT command

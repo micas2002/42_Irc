@@ -176,8 +176,8 @@ void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
-void	ServerMessages::KICK_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName ) {
+void	ServerMessages::KICK_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName, const std::string& comment ) {
 	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
-		+ " KICK " + channelName + " " + nick + " :" + nick + "\r\n" );
+		+ " KICK " + channelName + " " + nick + " " + comment + "\r\n" );
 	send( socketFd, message.c_str(), message.size(), 0 );
 }

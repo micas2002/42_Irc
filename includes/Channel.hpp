@@ -47,6 +47,7 @@ class Channel {
 		int										getUserLimit() const;
 		int										getUserCount() const;
 		bool									getInviteOnly() const;
+		bool									getTopicRestriction() const;
 		bool									isInvited( const std::string& user ) const;
 		bool									isUser( const std::string& user ) const;
 		bool									isOperator( const std::string& user ) const;	

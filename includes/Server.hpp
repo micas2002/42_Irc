@@ -43,11 +43,11 @@ enum COMMANDS {
 };
 
 enum MODES {
-	MODE_I = 151,
-	MODE_T = 164,
-	MODE_K = 153,
-	MODE_O = 157,
-	MODE_L = 154
+	MODE_I = 105,
+	MODE_T = 116,
+	MODE_K = 107,
+	MODE_O = 111,
+	MODE_L = 108
 };
 
 class Server

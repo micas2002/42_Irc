@@ -62,6 +62,9 @@ class ServerMessages {
 		// INVITE Message
 		static void		INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName );
 
+		// KICK Message
+		static void		KICK_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName );
+
 	private:
 		ServerMessages();
 		~ServerMessages();

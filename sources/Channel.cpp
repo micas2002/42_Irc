@@ -1,8 +1,8 @@
 #include "../includes/Channel.hpp"
 
-Channel::Channel() : _name( "" ), _userLimit( -1 ) {}
+Channel::Channel() : _name( "" ), _userLimit( -1 ), _inviteOnly( false ), _topicRestriction( false ) {}
 
-Channel::Channel( std::string name ) : _name( name ), _userLimit( -1 ) {}
+Channel::Channel( std::string name ) : _name( name ), _userLimit( -1 ), _inviteOnly( false ), _topicRestriction( false ) {}
 
 Channel::Channel( const Channel& copy ): _name(copy._name) {
 	_channelPassword = copy._channelPassword;
@@ -45,7 +45,7 @@ std::map<std::string, User*>&	Channel::getOperators() { return ( _operators ); }
 std::map<std::string, User*>&	Channel::getInvites() { return ( _inviteList ); }
 
 User*	Channel::getUser( const std::string& nickname ) {
-	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
+	std::map<std::string, User*>::iterator	it = _users.find( nickname );
 	if ( it != _operators.end() )
 		return ( it->second );
 	return ( NULL );
@@ -98,7 +98,8 @@ std::string	Channel::getModes() const {
 		finalModes += 'l';
 		addOns += _userLimit;
 	}
-
+	if ( addOns.length() == 1 )
+		return ( "" );
 	return ( finalModes + addOns );
 }
 

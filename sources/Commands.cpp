@@ -257,12 +257,12 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 
 	Channel*	channel = getChannel( parameters.at( 1 ) );
 
-	if ( channel->getUser( user->getNickname() ) == NULL ) { // Checks if user executing command is on the channel
+	if ( channel->isUser( user->getNickname() ) == false ) { // Checks if user executing command is on the channel
 		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
 		return;
 	}
 
-	if ( channel->getOperator( user->getNickname() ) == NULL ) { // Checks if user executing command is operator in channel
+	if ( channel->isOperator( user->getNickname() ) == false ) { // Checks if user executing command is operator in channel
 		ServerMessages::ERR_CHANOPRIVSNEEDED( userSocket, user->getNickname(), parameters.at( 1 ) );
 		return;
 	}
@@ -275,6 +275,7 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 	}
 
 	channel->ejectUser( target );
+	ServerMessages::KICK_MESSAGE( userSocket, user, target->getNickname(),  channel->getName() );
 }
 
 // QUIT command
@@ -366,10 +367,6 @@ void	Server::whoUser( int userSocket, const std::string& username ) {
 
 // MODE Command
 void	Server::modeCommand( int userSocket, std::string& command ) {
-	// if ( user->getIsAuthenticated() == false ) {
-	// 	send( userSocket, "Server: You must first register/r/n", 33, 0 );
-	// 	return ;
-	// }
 	User*						sender = getUser( userSocket );
 	std::vector< std::string >	params = splitByCharacter( command, ' ' );
 
@@ -405,7 +402,8 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 		int	paramsCounter = 3;
 		std::string argument;
 		for ( std::vector< std::string >::iterator it = modeChanges.begin(); it != modeChanges.end(); it++ ) {
-			switch ( simpleHash( it[ 1 ] ) )
+			std::string tmp = *it;
+			switch ( tmp.at(1) )
 			{
 				case MODE_I:
 					modeInvite( ch, *it, sender );
@@ -499,7 +497,8 @@ void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::s
 }
 
 void	Server::modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments ) {
-	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channel_name + modes + arguments + "\r\n" );
+	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channel_name + " " + modes + " " + arguments + "\r\n" );
+	std::cout << serverMessage << std::endl;
 	send( user->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
 }
 

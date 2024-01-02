@@ -1,6 +1,5 @@
 #include "ServerMessages.hpp"
 
-
 ServerMessages::ServerMessages() {}
 
 ServerMessages::~ServerMessages() {}
@@ -15,7 +14,7 @@ ServerMessages&	ServerMessages::operator = ( const ServerMessages& assign ) {
 // ERRORS
 // ERR_NOSUCHNICK 401
 void		ServerMessages::ERR_NOSUCHNICK( const int socketFd, const std::string& clientName, const std::string& nickname ) {
-	std::string message( ":Tijolinhos 401 " + clientName + " " + nickname + " :No such nick/channel\r\n" );
+	std::string message( "Tijolinhos 401 " + clientName + " " + nickname + " :No such nick/channel\r\n" );
 
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
@@ -139,6 +138,20 @@ void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, 
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+// RPL_NOTOPIC 331
+void	ServerMessages::RPL_NOTOPIC( int socketFd, const std::string& clientName, const std::string& channelName ) {
+	std::string	message( ":Tijolinhos 331 " + clientName + " " + channelName + " :No topic is set\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
+// RPL_TOPIC 332
+void	ServerMessages::RPL_TOPIC( int socketFd, const std::string& clientName, Channel* channel, const std::string& topic ) {
+	std::string	message( ":Tijolinhos 332 " + clientName + " " + channel->getName() + " :" + topic + "\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}
+
 // RPL_USER_MODES 324
 void	ServerMessages::RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes ) {
 	std::string message( "::Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
@@ -173,6 +186,16 @@ void	ServerMessages::JOIN_MESSAGE( int socketFd, User* user, Channel* channel ) 
 void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName ) {
 	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
 		+ " INVITE " + nick + " :" + channelName + "\r\n" );
+
+	send( socketFd, message.c_str(), message.size(), 0 );	
+}
+
+// TOPIC_MESSAGE
+void	ServerMessages::TOPIC_MESSAGE( int socketFd, User* user, Channel* channel, const std::string& topic ) {
+	std::string	message( user->getMessagePrefix() + "TOPIC " + channel->getName() + " :" + topic + "\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+	channel->sendMessage( message, clientName );
 
 	send( socketFd, message.c_str(), message.size(), 0 );
 }

@@ -64,6 +64,8 @@ int		Channel::getUserCount() const { return ( _users.size() ); }
 
 bool	Channel::getInviteOnly() const { return ( _inviteOnly ); }
 
+bool	Channel::getTopicRestriction() const { return ( _topicRestriction ); }
+
 bool	Channel::isInvited( const std::string& user ) const {
 	if ( _inviteList.find( user ) != _inviteList.end() )
 		return ( true );

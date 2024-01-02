@@ -49,6 +49,10 @@ class ServerMessages {
 		// REPLIES
 		// RPL_ENDOFWHO 315
 		static void		RPL_ENDOFWHO( int socketFd, const std::string& clientName, const std::string& mask );
+		// RPL_NOTOPIC 331
+		static void		RPL_NOTOPIC( int socketFd, const std::string& clientName, const std::string& channelName );
+		// RPL_TOPIC 332
+		static void		RPL_TOPIC( int socketFd, const std::string& clientName, Channel* channel, const std::string& topic );
 		// RPL_INVITING 341
 		static void		RPL_INVITING( int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// RPL_WHOREPLY 352
@@ -64,6 +68,8 @@ class ServerMessages {
 		// INVITE Message
 		static void		INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName );
 
+		// TOPIC Message
+		static void		TOPIC_MESSAGE( int socketFd, User* user, Channel* channel, const std::string& topic );
 		// KICK Message
 		static void		KICK_MESSAGE( int socketFd, User* user, const std::string& nick, Channel* channel, const std::string& comment );
 
@@ -72,7 +78,6 @@ class ServerMessages {
 
 		//NAMES Message 353
 		static void		NAMES_MESSAGE( int socketFd, User* user, Channel* channel );
-
 
 	private:
 		ServerMessages();

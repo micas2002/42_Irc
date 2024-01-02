@@ -64,6 +64,9 @@ class ServerMessages {
 		// INVITE Message
 		static void		INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName );
 
+		// TOPIC Message
+		static void		TOPIC_MESSAGE( int socketFd, User* user, Channel* channel, const std::string& topic );
+
 	private:
 		ServerMessages();
 		~ServerMessages();

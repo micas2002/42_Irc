@@ -150,7 +150,6 @@ void	ServerMessages::RPL_TOPIC( int socketFd, const std::string& clientName, Cha
 	std::string	message( ":Tijolinhos 332 " + clientName + " " + channel->getName() + " :" + topic + "\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
-	channel->sendMessage( message, clientName );
 }
 
 // RPL_INVITING 341
@@ -182,4 +181,12 @@ void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string
 		+ " INVITE " + nick + " :" + channelName + "\r\n" );
 
 	send( socketFd, message.c_str(), message.size(), 0 );	
+}
+
+// TOPIC_MESSAGE
+void	ServerMessages::TOPIC_MESSAGE( int socketFd, User* user, Channel* channel, const std::string& topic ) {
+	std::string	message( user->getMessagePrefix() + "TOPIC " + channel->getName() + " :" + topic + "\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+	channel->sendMessage( message, clientName );
 }

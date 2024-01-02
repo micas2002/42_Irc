@@ -443,4 +443,6 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 
 	std::string& topic = parameters.at( 2 );
 	topic.erase( 0, 1 );
+	channel->setTopic( topic );
+	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel, topic ); // RPL_TOPIC 332
 }

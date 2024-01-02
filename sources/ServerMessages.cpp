@@ -138,6 +138,12 @@ void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, 
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+// RPL_CHANNELMODEIS 324
+void	ServerMessages::RPL_CHANNELMODEIS( int socketFd, User* user, const std::string& channel_name, const std::string& modes ) {
+	std::string message( "::Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
+	send( socketFd, message.c_str(),  message.size(), 0 );
+}
+
 // RPL_NOTOPIC 331
 void	ServerMessages::RPL_NOTOPIC( int socketFd, const std::string& clientName, const std::string& channelName ) {
 	std::string	message( ":Tijolinhos 331 " + clientName + " " + channelName + " :No topic is set\r\n" );
@@ -146,16 +152,10 @@ void	ServerMessages::RPL_NOTOPIC( int socketFd, const std::string& clientName, c
 }
 
 // RPL_TOPIC 332
-void	ServerMessages::RPL_TOPIC( int socketFd, const std::string& clientName, Channel* channel, const std::string& topic ) {
-	std::string	message( ":Tijolinhos 332 " + clientName + " " + channel->getName() + " :" + topic + "\r\n" );
+void	ServerMessages::RPL_TOPIC( int socketFd, const std::string& clientName, const std::string& channelName, const std::string& topic ) {
+	std::string	message( ":Tijolinhos 332 " + clientName + " " + channelName + " :" + topic + "\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
-}
-
-// RPL_USER_MODES 324
-void	ServerMessages::RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes ) {
-	std::string message( "::Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
-	send( socketFd, message.c_str(),  message.size(), 0 );
 }
 
 // RPL_INVITING 341
@@ -170,46 +170,11 @@ void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& 
 	std::string message( ":Tijolinhos 352 " + sender + " " + target + " " + user->getUsername() \
 		+ " " + user->getIp() + " Tijolinhos " + user->getNickname() + " H :0 realname\r\n" );
 
-  send( socketFd, message.c_str(), message.size(), 0 );
-}
-
-// JOIN_MESSAGE
-void	ServerMessages::JOIN_MESSAGE( int socketFd, User* user, Channel* channel ) {
-	std::string	message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
-		+ " JOIN " + channel->getName() + "\r\n" );
-	
-	send( socketFd, message.c_str(), message.size(), 0 );
-	ServerMessages::NAMES_MESSAGE( socketFd, user, channel );
-}
-
-// INVITE_MESSAGE
-void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName ) {
-	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
-		+ " INVITE " + nick + " :" + channelName + "\r\n" );
-
-	send( socketFd, message.c_str(), message.size(), 0 );	
-}
-
-// TOPIC_MESSAGE
-void	ServerMessages::TOPIC_MESSAGE( int socketFd, User* user, Channel* channel, const std::string& topic ) {
-	std::string	message( user->getMessagePrefix() + "TOPIC " + channel->getName() + " :" + topic + "\r\n" );
-	
-	send( socketFd, message.c_str(), message.size(), 0 );
-	channel->sendMessage( message, clientName );
-
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
-// KICK_MESSAGE
-void	ServerMessages::KICK_MESSAGE( int socketFd, User* user, const std::string& nick, Channel* channel, const std::string& comment ) {
-	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
-		+ " KICK " + channel->getName() + " " + nick + " " + comment + "\r\n" );
-	send( socketFd, message.c_str(), message.size(), 0 );
-  channel->sendMessage( message, user->getNickname() );
-}
-
-// NAMES_MESSAGE 353
-void	ServerMessages::NAMES_MESSAGE( int socketFd, User* user, Channel* channel ) {
+// RPL_NAMREPLY 353
+void	ServerMessages::RPL_NAMREPLY( int socketFd, User* user, Channel* channel ) {
 	std::map< std::string, User* >& _users = channel->getUsers();
 
 	std::string message( ":Tijolinhos 353 " + user->getNickname() + " = " + channel->getName() + " :" );
@@ -221,12 +186,48 @@ void	ServerMessages::NAMES_MESSAGE( int socketFd, User* user, Channel* channel )
 	message.erase( message.end() - 1 );
 	message += "\r\n";
 	send( socketFd, message.c_str(), message.size(), 0 );
-	RPL_ENDOFNAMES( socketFd, user->getNickname(), channel->getName() );
+	ServerMessages::RPL_ENDOFNAMES( socketFd, user->getNickname(), channel );
 }
 
-// RPL_END_OF_NAMES 366
-void	ServerMessages::RPL_ENDOFNAMES( int socketFd, const std::string& nick, const std::string& channel_name ) {
-	std::string message(":Tijolinhos 366 " + nick + " " + channel_name + " :End of /NAMES list." + "\r\n");
+// RPL_ENDOFNAMES 366
+void	ServerMessages::RPL_ENDOFNAMES( int socketFd, const std::string& nick, Channel* channel ) {
+	std::string message(":Tijolinhos 366 " + nick + " " + channel->getName() + " :End of /NAMES list." + "\r\n");
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+	channel->sendMessage( message, nick );
+}
+
+// Special messages
+// INVITE_MESSAGE
+void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName ) {
+	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
+		+ " INVITE " + nick + " :" + channelName + "\r\n" );
+
+	send( socketFd, message.c_str(), message.size(), 0 );	
+}
+
+// JOIN_MESSAGE
+void	ServerMessages::JOIN_MESSAGE( int socketFd, User* user, Channel* channel ) {
+	std::string	message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
+		+ " JOIN " + channel->getName() + "\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+	ServerMessages::RPL_NAMREPLY( socketFd, user, channel );
+}
+
+// TOPIC_MESSAGE
+void	ServerMessages::TOPIC_MESSAGE( int socketFd, User* user, Channel* channel, const std::string& topic ) {
+	std::string	message( user->getMessagePrefix() + "TOPIC " + channel->getName() + " :" + topic + "\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+	channel->sendMessage( message, user->getNickname() );
+}
+
+// KICK_MESSAGE
+void	ServerMessages::KICK_MESSAGE( int socketFd, User* user, const std::string& nick, Channel* channel, const std::string& comment ) {
+	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
+		+ " KICK " + channel->getName() + " " + nick + " " + comment + "\r\n" );
+	
 	send( socketFd, message.c_str(), message.size(), 0 );
 	channel->sendMessage( message, user->getNickname() );
 }
@@ -235,6 +236,7 @@ void	ServerMessages::RPL_ENDOFNAMES( int socketFd, const std::string& nick, cons
 void	ServerMessages::PART_MESSAGE( int socketFd, User* user, Channel* channel ) {
 	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
 		+ " PART " + channel->getName() + "\r\n" );
+
 	send( socketFd, message.c_str(), message.size(), 0 );
 	channel->sendMessage( message, user->getNickname() );
 }

@@ -426,7 +426,7 @@ void	Server::modeCommand( int userSocket, std::string& command ) {
 void	Server::modeChannel( User* sender, std::vector< std::string > params, Channel* ch ) {
 
 	if ( params.size() == 2 ) { // Return all the active modes for the channel
-		ServerMessages::RPL_USER_MODES( sender->getSocketFd(), sender, ch->getName(), ch->getModes() );
+		ServerMessages::RPL_CHANNELMODEIS( sender->getSocketFd(), sender, ch->getName(), ch->getModes() );
 		return ;
 	}
 
@@ -642,7 +642,8 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 	std::string& topic = parameters.at( 2 );
 	topic.erase( 0, 1 );
 	channel->setTopic( topic );
-	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel, topic ); // RPL_TOPIC 332
+	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel->getName(), topic ); // RPL_TOPIC 332
+}
 
 // NAMES command
 void	Server::namesCommand( int userSocket, std::string& command ) {
@@ -674,5 +675,5 @@ void	Server::namesCommand( int userSocket, std::string& command ) {
 		return;
 	}
 
-	ServerMessages::NAMES_MESSAGE( userSocket, user, channel );
+	ServerMessages::RPL_NAMREPLY( userSocket, user, channel );
 }

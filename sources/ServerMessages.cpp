@@ -161,11 +161,12 @@ void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& 
 }
 
 // JOIN_MESSAGE
-void	ServerMessages::JOIN_MESSAGE( int socketFd, User* user, const std::string& channelName ) {
+void	ServerMessages::JOIN_MESSAGE( int socketFd, User* user, Channel* channel ) {
 	std::string	message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
-		+ " JOIN " + channelName + "\r\n" );
+		+ " JOIN " + channel->getName() + "\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
+	ServerMessages::NAMES_MESSAGE( socketFd, user, channel );
 }
 
 // INVITE_MESSAGE
@@ -180,6 +181,29 @@ void	ServerMessages::INVITE_MESSAGE( int socketFd, User* user, const std::string
 void	ServerMessages::KICK_MESSAGE( int socketFd, User* user, const std::string& nick, Channel* channel, const std::string& comment ) {
 	std::string message( ":" + user->getNickname() + "!" + user->getUsername() + "@" + user->getIp()\
 		+ " KICK " + channel->getName() + " " + nick + " " + comment + "\r\n" );
+	send( socketFd, message.c_str(), message.size(), 0 );
+  channel->sendMessage( message, user->getNickname() );
+}
+
+// NAMES_MESSAGE 353
+void	ServerMessages::NAMES_MESSAGE( int socketFd, User* user, Channel* channel ) {
+	std::map< std::string, User* >& _users = channel->getUsers();
+
+	std::string message( ":Tijolinhos 353 " + user->getNickname() + " = " + channel->getName() + " :" );
+	for ( std::map<std::string, User*>::iterator it = _users.begin(); it != _users.end(); it++ ) {
+		if ( channel->isOperator( it->second ) )
+			message += '@';
+		message += it->first + " ";
+	}
+	message.erase( message.end() - 1 );
+	message += "\r\n";
+	send( socketFd, message.c_str(), message.size(), 0 );
+	RPL_ENDOFNAMES( socketFd, user->getNickname(), channel->getName() );
+}
+
+// RPL_END_OF_NAMES 366
+void	ServerMessages::RPL_ENDOFNAMES( int socketFd, const std::string& nick, const std::string& channel_name ) {
+	std::string message(":Tijolinhos 366 " + nick + " " + channel_name + " :End of /NAMES list." + "\r\n");
 	send( socketFd, message.c_str(), message.size(), 0 );
 	channel->sendMessage( message, user->getNickname() );
 }

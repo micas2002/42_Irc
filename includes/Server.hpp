@@ -40,7 +40,8 @@ enum COMMANDS {
 	USER = 786,
 	PRIVMSG = 2187,
 	WHO =  468,
-	PART = 792
+	NAMES = 1130,
+	PART = 792,
 };
 
 enum MODES {
@@ -106,6 +107,7 @@ class Server
 		void							kickCommand( int userSocket, const std::string& command );
 		void							quitCommand( int userSocket, std::string& command );
 		void							inviteCommand( int userSocket, std::string& command );
+		void							namesCommand( int userSocket, std::string& command );
 		void							partCommand( int userSocket, std::string& command );
 
 		// JOIN

@@ -125,11 +125,11 @@ void	Channel::addInvite( User* newInvite ) {
 	_inviteList.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
 }
 
-void	Channel::ejectUser( User* user ) { _users.erase( user->getUsername() ); }
+void	Channel::ejectUser( User* user ) { _users.erase( user->getNickname() ); }
 
-void	Channel::ejectOperator( User* user ) { _operators.erase( user->getUsername() ); }
+void	Channel::ejectOperator( User* user ) { _operators.erase( user->getNickname() ); }
 
-void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getUsername() ); }
+void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getNickname() ); }
 
 void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) {
 	for ( std::map<std::string, User*>::iterator it = _users.begin(); it != _users.end(); it++ ) {

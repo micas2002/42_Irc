@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <sys/types.h>
@@ -39,6 +40,16 @@ enum COMMANDS {
 	USER = 786,
 	PRIVMSG = 2187,
 	WHO =  468,
+	NAMES = 1130,
+	PART = 792,
+};
+
+enum MODES {
+	MODE_I = 105,
+	MODE_T = 116,
+	MODE_K = 107,
+	MODE_O = 111,
+	MODE_L = 108
 };
 
 class Server
@@ -97,8 +108,10 @@ class Server
 		void							quitCommand( int userSocket, std::string& command );
 		void							inviteCommand( int userSocket, std::string& command );
 		void							topicCommand( int userSocket, std::string& command );
+		void							namesCommand( int userSocket, std::string& command );
+		void							partCommand( int userSocket, std::string& command );
 
-		// JOIN	
+		// JOIN
 		bool							isValidChannelName( std::string& channelName );
 		void							createNewChannel( std::string& channelName, User* user );
 		void							addUserToChannel( std::string& channelName, User* user , std::vector<std::string>& channelsKeys );
@@ -110,8 +123,19 @@ class Server
 		void							whoChannel( int userSocket, const std::string& channelName );
 		void							whoUser( int userSocket, const std::string& username );
 
+		// MODE
+		void							modeCommand( int userSocket, std::string& command );
+		void							modeChannel( User* sender, std::vector< std::string > params, Channel* ch );
+		void							modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments );
+		void							modeInvite( Channel* channel, std::string flag, User* sender );
+		void							modeTopic( Channel* channel, std::string flag, User* sender );
+		void							modeKey( Channel* channel, std::string flag, User* sender, std::string newKey );
+		void							modeOperator( Channel *channel, std::string flag, User* sender, std::string receiver );
+		void							modeLimit( Channel *channel, std::string flag, User* sender, std::string limit );
+
 	private:
 		std::map<std::string, User>		_users;
+		std::map<int, std::string>		_commandInput;
 		std::map<int, std::string>		_usersBySocket;
 		std::map<std::string, Channel>	_channels;
 		std::string						_serverPassword;

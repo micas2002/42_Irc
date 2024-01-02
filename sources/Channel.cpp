@@ -1,8 +1,8 @@
 #include "../includes/Channel.hpp"
 
-Channel::Channel() : _name( "" ), _userLimit( -1 ) {}
+Channel::Channel() : _name( "" ), _userLimit( -1 ), _inviteOnly( false ), _topicRestriction( false ) {}
 
-Channel::Channel( std::string name ) : _name( name ), _userLimit( -1 ) {}
+Channel::Channel( std::string name ) : _name( name ), _userLimit( -1 ), _inviteOnly( false ), _topicRestriction( false ) {}
 
 Channel::Channel( const Channel& copy ): _name(copy._name) {
 	_channelPassword = copy._channelPassword;
@@ -45,8 +45,8 @@ std::map<std::string, User*>&	Channel::getOperators() { return ( _operators ); }
 std::map<std::string, User*>&	Channel::getInvites() { return ( _inviteList ); }
 
 User*	Channel::getUser( const std::string& nickname ) {
-	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
-	if ( it != _operators.end() )
+	std::map<std::string, User*>::iterator	it = _users.find( nickname );
+	if ( it != _users.end() )
 		return ( it->second );
 	return ( NULL );
 }
@@ -84,11 +84,36 @@ bool	Channel::isOperator( const std::string& user ) const {
 	return ( false );
 }
 
+std::string	Channel::getModes() const {
+	std::string finalModes = "+";
+	std::string addOns = " ";
+
+	if ( _inviteOnly )
+		finalModes += 'i';
+	else if ( _topicRestriction )
+		finalModes += 't';
+	else if ( _channelPassword.length() > 0 ) {
+		finalModes += 'k';
+		addOns += _channelPassword + " ";
+	}
+	else if ( _userLimit != -1 ) {
+		finalModes += 'l';
+		addOns += _userLimit;
+	}
+	if ( addOns.length() == 1 )
+		return ( "" );
+	return ( finalModes + addOns );
+}
+
 void	Channel::setPassword( std::string password ) { _channelPassword = password; }
 
 void	Channel::setTopic( std::string topic ) { _topic = topic; }
 
 void	Channel::setUserLimit( int userLimit ) { _userLimit = userLimit; }
+
+void	Channel::setInviteOnly( bool inviteOnly ) { _inviteOnly = inviteOnly; }
+
+void	Channel::setTopicRestriction( bool topicRestriction ) { _topicRestriction = topicRestriction; }
 
 void	Channel::addUser( User* newUser ) { 
 	_users.insert( std::pair<std::string, User*>( ( newUser->getNickname() ), newUser ) ); 
@@ -102,11 +127,11 @@ void	Channel::addInvite( User* newInvite ) {
 	_inviteList.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
 }
 
-void	Channel::ejectUser( User* user ) { _users.erase( user->getUsername() ); }
+void	Channel::ejectUser( User* user ) { _users.erase( user->getNickname() ); }
 
-void	Channel::ejectOperator( User* user ) { _operators.erase( user->getUsername() ); }
+void	Channel::ejectOperator( User* user ) { _operators.erase( user->getNickname() ); }
 
-void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getUsername() ); }
+void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getNickname() ); }
 
 void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) {
 	for ( std::map<std::string, User*>::iterator it = _users.begin(); it != _users.end(); it++ ) {
@@ -114,4 +139,11 @@ void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) 
 			continue;
 		send( it->second->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
 	}
+}
+
+bool	Channel::isOperator( User* user ) {
+	std::map<std::string, User*>::iterator	it = _operators.find( user->getNickname() );
+	if ( it != _operators.end() )
+		return ( true );
+	return ( false );
 }

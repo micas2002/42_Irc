@@ -111,14 +111,20 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 		case KICK:
 			kickCommand( userSocket, command );
 			break;
+
+		case PART:
+			partCommand( userSocket, command );
+			break;
 		
 		case INVITE:
+			inviteCommand( userSocket, command );
 			break;
 
 		case TOPIC:
 			break;
 		
 		case MODE:
+			modeCommand( userSocket, command );
 			break;
 
 		case PASS:
@@ -139,6 +145,10 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 
 		case WHO:
 			whoCommand( userSocket, command );
+			break;
+
+		case NAMES:
+			namesCommand( userSocket, command );
 			break;
 		
 		default:

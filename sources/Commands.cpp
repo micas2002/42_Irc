@@ -34,8 +34,9 @@ void	Server::joinCommand( int userSocket, std::string& command ) {
 			continue ;
 		}
 
-		if ( _channels.find( channelName ) == _channels.end() ) 
+		if ( _channels.find( channelName ) == _channels.end() ) {
 			createNewChannel( channelName, user );
+		}
 		else 
 			addUserToChannel( channelName, user, channelsKeys );
 	}
@@ -54,7 +55,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	addChannel( channel );
 	user->addChannel( channelName, &_channels[channelName]);
 
-	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, channelName );
+	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, &channel );
 }
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
@@ -87,7 +88,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 
 	std::map<std::string, User*>::iterator	iter = channel.getUsers().begin();
 	for ( ; iter != channel.getUsers().end(); ++iter ) {
-		ServerMessages::JOIN_MESSAGE( iter->second->getSocketFd(), user, channelName );
+		ServerMessages::JOIN_MESSAGE( iter->second->getSocketFd(), user, &channel );
 	}
 }
 
@@ -256,12 +257,12 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 
 	Channel*	channel = getChannel( parameters.at( 1 ) );
 
-	if ( channel->getUser( user->getNickname() ) == NULL ) { // Checks if user executing command is on the channel
+	if ( channel->isUser( user->getNickname() ) == false ) { // Checks if user executing command is on the channel
 		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
 		return;
 	}
 
-	if ( channel->getOperator( user->getNickname() ) == NULL ) { // Checks if user executing command is operator in channel
+	if ( channel->isOperator( user->getNickname() ) == false ) { // Checks if user executing command is operator in channel
 		ServerMessages::ERR_CHANOPRIVSNEEDED( userSocket, user->getNickname(), parameters.at( 1 ) );
 		return;
 	}
@@ -274,6 +275,49 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 	}
 
 	channel->ejectUser( target );
+	std::string comment = ":Because you stink ";
+	
+	if ( parameters.size() > 3 && parameters.at( 3 ).at( 0 ) == ':' ) {
+		comment.clear();
+		for ( std::vector< std::string >::iterator it = parameters.begin() + 3; it != parameters.end(); it++)
+			comment += *it + " ";
+	}
+	comment.erase(comment.end() - 1);
+	ServerMessages::KICK_MESSAGE( userSocket, user, target->getNickname(),  channel, comment );
+}
+
+// PART command
+void	Server::partCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+
+	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
+		return;
+	}
+
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	if ( parameters.size() < 3 ) { // Checks number of parameters given to the command
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), "KICK");
+		return;
+	}
+
+	if ( _channels.find( parameters.at( 1 ) ) == _channels.end()) { // Checks if channel exists
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	Channel*	channel = getChannel( parameters.at( 1 ) );
+
+	if ( channel->isUser( user->getNickname() ) == false ) { // Checks if user executing command is on the channel
+		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	channel->ejectUser( user );
+	ServerMessages::PART_MESSAGE( userSocket, user,  channel );
 }
 
 // QUIT command
@@ -296,6 +340,7 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 		channel = getChannel( chanIt->first );
 		channel->ejectUser( user );
 	}
+	_commandInput.erase( userSocket );
 
 	removeUser( getUser( userSocket ) ); // Removes user from server
 
@@ -305,6 +350,8 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 		std::cout <<  it->second.getSocketFd() << std::endl;
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
 	}
+	close( userSocket );	// close the fd!
+	FD_CLR( userSocket, &_master ) ; // remove fd from master set
 }
 
 // WHO command
@@ -358,6 +405,157 @@ void	Server::whoUser( int userSocket, const std::string& username ) {
 		ServerMessages::RPL_WHOREPLY( userSocket, target, user->getNickname(), username ); // RPL_WHOREPLY 352
 	}
 	ServerMessages::RPL_ENDOFWHO( userSocket, user->getNickname(), username ); // RPL_ENDOFWHO 315
+}
+
+// MODE Command
+void	Server::modeCommand( int userSocket, std::string& command ) {
+	User*						sender = getUser( userSocket );
+	std::vector< std::string >	params = splitByCharacter( command, ' ' );
+
+	if ( params.at( 1 ).find( '#' ) != std::string::npos ) {
+		Channel*	ch = getChannel( params.at( 1 ) );
+		if (!ch) {
+			ServerMessages::ERR_NOSUCHCHANNEL( userSocket, sender->getNickname(), params.at( 1 ) );
+			return ;
+		}
+		modeChannel( sender, params, ch );
+	}
+
+}
+
+void	Server::modeChannel( User* sender, std::vector< std::string > params, Channel* ch ) {
+
+	if ( params.size() == 2 ) { // Return all the active modes for the channel
+		ServerMessages::RPL_USER_MODES( sender->getSocketFd(), sender, ch->getName(), ch->getModes() );
+		return ;
+	}
+
+	std::string					rawModes = params.at( 2 );
+	std::vector< std::string >	modeChanges;
+	std::string					modifier = "+";
+
+	for ( size_t i = 0; i < rawModes.length(); i++ ) {
+		if ( rawModes[i] == '+' || rawModes[i] == '-' ) {
+			modifier[0] = rawModes[i];
+			continue ;
+		}
+		modeChanges.push_back( (modifier + rawModes[i]) );
+	}
+
+	if ( modeChanges.size() == 0 ) {
+		ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+		return ;
+	}
+
+	if ( ch->isOperator( sender ) == false ) {
+		ServerMessages::ERR_CHANOPRIVSNEEDED( sender->getSocketFd(), sender->getNickname(), ch->getName() );
+		return ;
+	}
+
+	int	paramsCounter = 3;
+	std::string argument;
+
+	for ( std::vector< std::string >::iterator it = modeChanges.begin(); it != modeChanges.end(); it++ ) {
+		
+		std::string tmp = *it;
+		switch ( tmp.at(1) )
+		{
+			case MODE_I:
+				modeInvite( ch, *it, sender );
+				break;
+			
+			case MODE_T:
+				modeTopic( ch, *it, sender );
+				break;
+
+			case MODE_K:
+				try {
+					argument = params.at( paramsCounter++ );
+					modeKey( ch, *it, sender, argument );
+				} catch ( std::out_of_range &e ) {
+					ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+					return ;
+				}
+				break;
+
+			case MODE_O:
+				try {
+					argument = params.at( paramsCounter++ );
+					modeOperator( ch, *it, sender, argument );
+				} catch ( std::out_of_range &e ) {
+					ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+					return ;
+				}
+				break;
+
+			case MODE_L:
+				if ( it->find( '-' ) != std::string::npos ) {
+					modeLimit( ch, *it, sender, "" );
+					break;
+				}
+				try {
+					argument = params.at( paramsCounter++ );
+					modeLimit( ch, *it, sender, argument );
+				} catch ( std::out_of_range &e ) {
+					ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+					return ;
+				}
+				break;
+
+			default:
+				ServerMessages::ERR_NEEDMOREPARAMS( sender->getSocketFd(), sender->getNickname(), "MODE" );
+				break;
+		}
+	}
+}
+
+void	Server::modeInvite( Channel* ch, std::string flag, User* user ) {
+	flag.find( '+' ) != std::string::npos ? ch->setInviteOnly( true ) : ch->setInviteOnly( false );
+	modeMessage( user, ch->getName(), flag, "" );
+}
+
+void	Server::modeTopic( Channel* ch, std::string flag, User* user ) {
+	flag.find( '+' ) != std::string::npos ? ch->setTopicRestriction( true ) : ch->setTopicRestriction( false ); 
+	modeMessage( user, ch->getName(), flag, "" );	
+}
+
+void	Server::modeKey( Channel* ch, std::string flag, User* user, std::string newKey ) {
+	if ( flag.find( '+' ) != std::string::npos )
+		ch->setPassword( "" );
+	else
+		ch->setPassword( newKey );
+	modeMessage( user, ch->getName(), flag, "" );
+}
+
+void	Server::modeOperator( Channel *channel, std::string flag, User* sender, std::string receiver ) {
+	User*	rec = getUser( receiver );
+	if ( !rec ) {
+		ServerMessages::ERR_USERNOTINCHANNEL( sender->getSocketFd(), sender->getNickname(), rec->getNickname(), channel->getName() );
+		return ;
+	}
+	if ( flag.find( '+' ) != std::string::npos )
+		channel->addOperator( rec );
+	else
+		channel->ejectOperator( rec );
+	modeMessage( sender, channel->getName(), flag, receiver );
+}
+
+void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::string limit ) {
+	int	newLimit;
+	if ( limit.length() == 0 )
+		newLimit = -1;
+	else {	
+		newLimit = atoi( limit.c_str() );
+		if ( newLimit <= 0 )
+			return ;
+	}
+	channel->setUserLimit( newLimit );
+	modeMessage( sender, channel->getName(), flag, limit );
+}
+
+void	Server::modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments ) {
+	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channel_name + " " + modes + " " + arguments + "\r\n" );
+	send( user->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
 }
 
 // INVITE command
@@ -445,4 +643,36 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 	topic.erase( 0, 1 );
 	channel->setTopic( topic );
 	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel, topic ); // RPL_TOPIC 332
+
+// NAMES command
+void	Server::namesCommand( int userSocket, std::string& command ) {
+	User*	user = getUser( userSocket );
+
+	if ( user->getIsAuthenticated() == false ) { // Checks if user is authenticated
+		ServerMessages::ERR_NOTREGISTERED( userSocket, user->getNickname() );
+		return;
+	}
+
+	std::vector<std::string>	parameters;
+	
+	parameters = splitByCharacter( command, ' ' );
+
+	if ( parameters.size() < 2 ) { // Checks number of parameters given to the command
+		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), "KICK");
+		return;
+	}
+
+	if ( _channels.find( parameters.at( 1 ) ) == _channels.end()) { // Checks if channel exists
+		ServerMessages::ERR_NOSUCHCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	Channel*	channel = getChannel( parameters.at( 1 ) );
+
+	if ( channel->isUser( user->getNickname() ) == false ) { // Checks if user executing command is on the channel
+		ServerMessages::ERR_NOTONCHANNEL( userSocket, user->getNickname(), parameters.at( 1 ) );
+		return;
+	}
+
+	ServerMessages::NAMES_MESSAGE( userSocket, user, channel );
 }

@@ -57,15 +57,27 @@ class ServerMessages {
 		static void		RPL_INVITING( int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// RPL_WHOREPLY 352
 		static void		RPL_WHOREPLY( int socketFd, User* user,  const std::string& sender, const std::string& target );
+		// RPL_USER_MODES
+		static void		RPL_USER_MODES( int socketFd, User* user, const std::string& channel_name, const std::string& modes );
+		//RPL_END_OF_NAMES Message 366
+		static void		RPL_ENDOFNAMES( int socketFd, const std::string& nickname, const std::string& channel_name );
 
 		// JOIN Message
-		static void		JOIN_MESSAGE( int socketFd, User* user, const std::string& channelName );
+		static void		JOIN_MESSAGE( int socketFd, User* user, Channel* channel );
 
 		// INVITE Message
 		static void		INVITE_MESSAGE( int socketFd, User* user, const std::string& nick, const std::string& channelName );
 
 		// TOPIC Message
 		static void		TOPIC_MESSAGE( int socketFd, User* user, Channel* channel, const std::string& topic );
+		// KICK Message
+		static void		KICK_MESSAGE( int socketFd, User* user, const std::string& nick, Channel* channel, const std::string& comment );
+
+		// PART Message
+		static void		PART_MESSAGE( int socketFd, User* user, Channel* channel );
+
+		//NAMES Message 353
+		static void		NAMES_MESSAGE( int socketFd, User* user, Channel* channel );
 
 	private:
 		ServerMessages();

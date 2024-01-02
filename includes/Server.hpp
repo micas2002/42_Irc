@@ -41,6 +41,7 @@ enum COMMANDS {
 	PRIVMSG = 2187,
 	WHO =  468,
 	NAMES = 1130,
+	PART = 792,
 };
 
 enum MODES {
@@ -107,6 +108,7 @@ class Server
 		void							quitCommand( int userSocket, std::string& command );
 		void							inviteCommand( int userSocket, std::string& command );
 		void							namesCommand( int userSocket, std::string& command );
+		void							partCommand( int userSocket, std::string& command );
 
 		// JOIN
 		bool							isValidChannelName( std::string& channelName );

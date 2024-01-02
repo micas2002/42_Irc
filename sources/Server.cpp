@@ -111,6 +111,10 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 		case KICK:
 			kickCommand( userSocket, command );
 			break;
+
+		case PART:
+			partCommand( userSocket, command );
+			break;
 		
 		case INVITE:
 			inviteCommand( userSocket, command );

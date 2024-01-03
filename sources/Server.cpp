@@ -121,6 +121,7 @@ void	Server::selectCommand( int userSocket, std::string& command ) {
 			break;
 
 		case TOPIC:
+			topicCommand( userSocket, command );
 			break;
 		
 		case MODE:

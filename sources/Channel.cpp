@@ -100,7 +100,7 @@ std::string	Channel::getModes() const {
 		finalModes += 'l';
 		addOns += _userLimit;
 	}
-	if ( addOns.length() == 1 )
+	if ( finalModes.length() == 1 )
 		return ( "" );
 	return ( finalModes + addOns );
 }

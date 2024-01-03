@@ -74,6 +74,8 @@ class ServerMessages {
 		static void		KICK_MESSAGE( int socketFd, User* user, const std::string& nick, Channel* channel, const std::string& comment );
 		// PART Message
 		static void		PART_MESSAGE( int socketFd, User* user, Channel* channel );
+		// NICK Message
+		static void		NICK_MESSAGE( int socketFd, User* user, std::string newNick, std::string oldNick );
 
 	private:
 		ServerMessages();

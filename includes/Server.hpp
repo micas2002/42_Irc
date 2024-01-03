@@ -64,6 +64,9 @@ class Server
 
 		// Operators
 		Server&							operator = ( const Server& assign );
+		
+		// Close Server
+		static void						closeServer( int signalnum );
 
 		//Gettters
 		User*							getUser( const std::string& username );
@@ -146,4 +149,6 @@ class Server
 		fd_set							_master;
 		fd_set							_readFds;
 		struct addrinfo					_hints;
+
+		static bool							_closeServer;
 };

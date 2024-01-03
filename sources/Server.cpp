@@ -1,5 +1,7 @@
 #include "Server.hpp"
 
+bool Server::_closeServer = false;
+
 Server::Server() {}
 
 Server::Server( const Server& copy ) {
@@ -20,6 +22,11 @@ Server&	Server::operator=( const Server& assign ) {
 		_hints = assign._hints;
 	}
 	return ( *this );
+}
+
+void	Server::closeServer( int signalnum ) { 
+	( void )signalnum;
+	Server::_closeServer = true;
 }
 
 User*	Server::getUser( const std::string& nickname ) {

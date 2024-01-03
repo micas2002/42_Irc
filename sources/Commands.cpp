@@ -163,9 +163,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	}
 	
 	std::vector<std::string>	parameters;
-	
 	parameters = splitByCharacter( command, ' ' );
-
 	if ( parameters.size() < 2 ) {
 		ServerMessages::ERR_NEEDMOREPARAMS( userSocket, user->getNickname(), command );
 		return;
@@ -184,9 +182,6 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 	User*				sender = getUser( userSocket );
 	std::string			recipient_name;
 	std::string			message;
-
-	// TO DO:
-	// need to implement errors 404, and 411
 
 	if ( sender->getIsAuthenticated() == false ) {
 		ServerMessages::ERR_NOTREGISTERED( userSocket, sender->getNickname() );

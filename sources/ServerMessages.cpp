@@ -140,7 +140,7 @@ void	ServerMessages::RPL_ENDOFWHO( int socketFd, const std::string& clientName, 
 
 // RPL_CHANNELMODEIS 324
 void	ServerMessages::RPL_CHANNELMODEIS( int socketFd, User* user, const std::string& channel_name, const std::string& modes ) {
-	std::string message( "::Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
+	std::string message( ":Tijolinhos 324 " + user->getNickname() + " " + channel_name + " " + modes + "\r\n" );
 	send( socketFd, message.c_str(),  message.size(), 0 );
 }
 

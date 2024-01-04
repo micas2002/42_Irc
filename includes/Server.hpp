@@ -133,6 +133,9 @@ class Server
 		void							modeOperator( Channel *channel, std::string flag, User* sender, std::string receiver );
 		void							modeLimit( Channel *channel, std::string flag, User* sender, std::string limit );
 
+		// Helper functions
+		void							changeNickInChannel( User* newUser, std::vector< Channel* >& regularChannels, std::vector< Channel* >& operatorChannels );
+
 	private:
 		std::map<std::string, User>		_users;
 		std::map<int, std::string>		_commandInput;

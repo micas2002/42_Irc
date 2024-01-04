@@ -39,7 +39,33 @@ User&	User::operator=( const User& copy ) {
 
 // Getters
 
-std::map<std::string, Channel*>&	User::getChannels() { return ( _channels ); }
+std::map<std::string, Channel*>&	User::getAllChannels() { return ( _channels ); }
+
+std::vector< Channel* >	User::getRegularChannels() {
+	std::vector< Channel* > regularChannels;
+
+	std::map<std::string, Channel*>::iterator		chanIt = _channels.begin();
+	Channel*										channel;
+	for (; chanIt != _channels.end(); ++chanIt ) {
+		channel = chanIt->second;
+		if ( channel->isOperator( this ) == false )
+			regularChannels.push_back( channel );
+	}
+	return ( regularChannels );
+}
+
+std::vector< Channel* >	User::getOperatorChannels() {
+	std::vector< Channel* > operatorChannels;
+
+	std::map<std::string, Channel*>::iterator		chanIt = _channels.begin();
+	Channel*										channel;
+	for (; chanIt != _channels.end(); ++chanIt ) {
+		channel = chanIt->second;
+		if ( channel->isOperator( this ) )
+			operatorChannels.push_back( channel );
+	}
+	return ( operatorChannels );
+}
 
 const std::string&	User::getNickname() const { return ( _nickname ); }
 

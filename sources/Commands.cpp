@@ -124,6 +124,7 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 // NICK command 
 void	Server::nickCommand( int userSocket, std::string& command ) {
 	User*						user = getUser( userSocket );
+	std::string					old_nick = user->getNickname();
 	std::vector<std::string>	parameters;
 	
 	parameters = splitByCharacter( command, ' ' );
@@ -134,13 +135,17 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 	}
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
-		User	updatedUser( *user );
+		User					updatedUser( *user );
+		std::vector< Channel* >	regularChannels = user->getRegularChannels();
+		std::vector< Channel* >	operatorChannels = user->getOperatorChannels();
 
 		removeUser( user );
 		updatedUser.setNickname( parameters.at( 1 ) );
 		addUser( updatedUser );
 
 		user = getUser( userSocket );
+		changeNickInChannel( user, regularChannels, operatorChannels );
+		
 		if ( user->getNicknameStatus() == false && user->getUsernameStatus() == true
 			&& user->getPasswordStatus() == true ) {
 				user->setIsAuthenticatedTrue();
@@ -148,9 +153,27 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		user->setNicknameStatusTrue();
 
 		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
+		ServerMessages::NICK_MESSAGE( userSocket, user, parameters.at( 1 ), old_nick );
 	}
 	else
 		ServerMessages::ERR_NICKNAMEINUSE( userSocket, user->getNickname(), parameters.at( 1 ) );
+}
+
+void	Server::changeNickInChannel( User* newUser, std::vector< Channel* >& regularChannels, std::vector< Channel* >& operatorChannels ) {
+	std::vector< Channel* >::iterator		chanIt = regularChannels.begin();
+	Channel* channel;
+	for (; chanIt != regularChannels.end(); ++chanIt ) {
+		channel = getChannel( (*chanIt)->getName() );
+		channel->addUser( newUser );
+		newUser->addChannel( channel->getName(), channel );
+	}
+	chanIt = operatorChannels.begin();
+	for (; chanIt != operatorChannels.end(); ++chanIt ) {
+		channel = getChannel( (*chanIt)->getName() );
+		channel->addOperator( newUser );
+		channel->addUser( newUser );
+		newUser->addChannel( channel->getName(), channel );
+	}
 }
 
 // USER command
@@ -327,7 +350,7 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 		message = message + " " + *itP;
 	
 	User*										user = getUser( userSocket );
-	std::map<std::string, Channel*>				channelsMap = user->getChannels();
+	std::map<std::string, Channel*>				channelsMap = user->getAllChannels();
 	std::map<std::string, Channel*>::iterator	chanIt = channelsMap.begin();
 	Channel*									channel;
 

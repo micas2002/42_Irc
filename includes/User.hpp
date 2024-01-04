@@ -3,6 +3,7 @@
 #include <iostream>
 #include <arpa/inet.h>
 #include <map>
+#include <vector>
 #include "Channel.hpp"
 
 class Channel;
@@ -22,7 +23,9 @@ class User
 		User&								operator = (const User& assiign);
 
 		//Getters
-		std::map<std::string, Channel*>&	getChannels();
+		std::map<std::string, Channel*>&	getAllChannels();
+		std::vector< Channel* >			getRegularChannels();
+		std::vector< Channel* >			getOperatorChannels();
 		const std::string&					getNickname() const;
 		const std::string&					getUsername() const;
 		int									getSocketFd() const;

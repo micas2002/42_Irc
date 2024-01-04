@@ -54,7 +54,7 @@ void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
 void	Server::addUser( User user ) {
 	_users.insert( std::pair<std::string, User>( user.getNickname(), user ) );
 
-	_usersBySocket.insert( std::pair<int, std::string>( user.getSocketFd(),  user.getNickname() ) );
+	_usersBySocket.insert( std::pair<int, std::string>( user.getSocketFd(), user.getNickname() ) );
 }
 
 void	Server::addChannel( Channel& channel ) {
@@ -62,6 +62,14 @@ void	Server::addChannel( Channel& channel ) {
 }
 
 void	Server::removeUser( User* user ) {
+	std::map<std::string, Channel*>					channelsMap = user->getAllChannels();
+	std::map<std::string, Channel*>::iterator		chanIt = channelsMap.begin();
+	Channel*										channel;
+
+	for (; chanIt != channelsMap.end(); ++chanIt ) { // Removes user from channels he is part of
+		channel = getChannel( chanIt->first );
+		channel->ejectUser( user );
+	}
 	_usersBySocket.erase( user->getSocketFd() );
 	_users.erase( user->getNickname() );
 }

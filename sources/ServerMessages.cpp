@@ -240,3 +240,11 @@ void	ServerMessages::PART_MESSAGE( int socketFd, User* user, Channel* channel ) 
 	send( socketFd, message.c_str(), message.size(), 0 );
 	channel->sendMessage( message, user->getNickname() );
 }
+
+// NICK_MESSAGE
+void	ServerMessages::NICK_MESSAGE( int socketFd, User* user , std::string newNick, std::string oldNick ) {
+	std::string message( ":" + oldNick + "!~" + oldNick + "@" + user->getIp()\
+		+ " NICK :" +  newNick + "\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+}

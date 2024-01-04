@@ -212,7 +212,6 @@ void	ServerMessages::JOIN_MESSAGE( int socketFd, User* user, Channel* channel ) 
 		+ " JOIN " + channel->getName() + "\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
-	ServerMessages::RPL_NAMREPLY( socketFd, user, channel );
 }
 
 // TOPIC_MESSAGE

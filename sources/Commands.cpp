@@ -56,6 +56,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	user->addChannel( channelName, &_channels[channelName]);
 
 	ServerMessages::JOIN_MESSAGE( user->getSocketFd(), user, &channel );
+	ServerMessages::RPL_NAMREPLY( user->getSocketFd(), user, &channel );
 }
 
 void	Server::addUserToChannel( std::string& channelName, User* user, std::vector<std::string>& channelsKeys ) {
@@ -90,6 +91,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 	for ( ; iter != channel.getUsers().end(); ++iter ) {
 		ServerMessages::JOIN_MESSAGE( iter->second->getSocketFd(), user, &channel );
 	}
+	ServerMessages::RPL_NAMREPLY( user->getSocketFd(), user, &channel );
 }
 
 // PASS command

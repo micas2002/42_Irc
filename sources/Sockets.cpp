@@ -51,7 +51,8 @@ void Server::createAndBindSocket() {
 }
 
 void Server::serverLoop() {
-	while ( 1 ) {
+	while ( !_closeServer ) {
+		signal( SIGINT, closeServer ); // catch ctrl-c
 		_readFds = _master; // copy read_fds into master
 		if ( select( _maxSocketFd + 1, &_readFds, NULL, NULL, NULL ) == -1 ) {
 			perror( "select" );

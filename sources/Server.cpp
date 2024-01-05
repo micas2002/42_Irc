@@ -75,7 +75,7 @@ void	Server::removeUser( User* user ) {
 
 	for (; chanIt != channelsMap.end(); ++chanIt ) { // Removes user from channels he is part of
 		channel = getChannel( chanIt->first );
-		channel->ejectUser( user );
+		channel->ejectUser( user->getNickname() );
 	}
 	_usersBySocket.erase( user->getSocketFd() );
 	_users.erase( user->getNickname() );

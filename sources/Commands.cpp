@@ -51,7 +51,7 @@ void	Server::createNewChannel( std::string& channelName, User* user ) {
 	Channel channel( channelName );
 	
 	channel.addUser( user );
-	channel.addOperator( user );
+	channel.addOperator( user->getNickname() );
 	addChannel( channel );
 	user->addChannel( channelName, &_channels[channelName]);
 
@@ -83,7 +83,7 @@ void	Server::addUserToChannel( std::string& channelName, User* user, std::vector
 	
 	if ( channelPassword.empty() == false )
 		channelsKeys.erase( channelsKeys.begin() );
-	channel.removeInvite( user );
+	channel.removeInvite( user->getNickname() );
 	channel.addUser( user );
 	user->addChannel( channelName, &channel );
 
@@ -172,7 +172,7 @@ void	Server::changeNickInChannel( User* newUser, std::vector< Channel* >& regula
 	chanIt = operatorChannels.begin();
 	for (; chanIt != operatorChannels.end(); ++chanIt ) {
 		channel = getChannel( (*chanIt)->getName() );
-		channel->addOperator( newUser );
+		channel->addOperator( newUser->getNickname() );
 		channel->addUser( newUser );
 		newUser->addChannel( channel->getName(), channel );
 	}
@@ -294,7 +294,7 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 		return;
 	}
 
-	channel->ejectUser( target );
+	channel->ejectUser( target->getNickname() );
 	std::string comment = ":Because you stink ";
 	
 	if ( parameters.size() > 3 && parameters.at( 3 ).at( 0 ) == ':' ) {
@@ -336,7 +336,7 @@ void	Server::partCommand( int userSocket, std::string& command ) {
 		return;
 	}
 
-	channel->ejectUser( user );
+	channel->ejectUser( user->getNickname() );
 	ServerMessages::PART_MESSAGE( userSocket, user,  channel );
 }
 
@@ -358,7 +358,7 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 
 	for (; chanIt != channelsMap.end(); ++chanIt ) { // Removes user from channels he is part of
 		channel = getChannel( chanIt->first );
-		channel->ejectUser( user );
+		channel->ejectUser( user->getNickname() );
 	}
 	_commandInput.erase( userSocket );
 
@@ -467,7 +467,7 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 		return ;
 	}
 
-	if ( ch->isOperator( sender ) == false ) {
+	if ( ch->isOperator( sender->getNickname() ) == false ) {
 		ServerMessages::ERR_CHANOPRIVSNEEDED( sender->getSocketFd(), sender->getNickname(), ch->getName() );
 		return ;
 	}
@@ -554,9 +554,9 @@ void	Server::modeOperator( Channel *channel, std::string flag, User* sender, std
 		return ;
 	}
 	if ( flag.find( '+' ) != std::string::npos )
-		channel->addOperator( rec );
+		channel->addOperator( rec->getNickname() );
 	else
-		channel->ejectOperator( rec );
+		channel->ejectOperator( rec->getNickname() );
 	modeMessage( sender, channel->getName(), flag, receiver );
 }
 
@@ -616,7 +616,7 @@ void	Server::inviteCommand( int userSocket, std::string& command ) {
 		return ;
 	}
 
-	channel->addInvite( target );
+	channel->addInvite( target->getNickname() );
 	ServerMessages::RPL_INVITING( userSocket, user->getNickname(), target->getNickname(), channel->getName() ); // RPL_INVITING 341
 	ServerMessages::INVITE_MESSAGE( target->getSocketFd(), user, target->getNickname(), channel->getName() ); // INVITE_MESSAGE
 }

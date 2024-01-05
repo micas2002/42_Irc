@@ -175,11 +175,12 @@ void	ServerMessages::RPL_WHOREPLY( int socketFd, User* user, const std::string& 
 
 // RPL_NAMREPLY 353
 void	ServerMessages::RPL_NAMREPLY( int socketFd, User* user, Channel* channel ) {
-	std::map< std::string, User* >& _users = channel->getUsers();
-
+	std::map< std::string, User* >& users = channel->getUsers();
 	std::string message( ":Tijolinhos 353 " + user->getNickname() + " = " + channel->getName() + " :" );
-	for ( std::map<std::string, User*>::iterator it = _users.begin(); it != _users.end(); it++ ) {
-		if ( channel->isOperator( it->second ) )
+	
+	std::map<std::string, User*>::iterator it = users.begin();
+	for ( ; it != users.end(); it++ ) {
+		if ( channel->isOperator( it->first ) )
 			message += '@';
 		message += it->first + " ";
 	}

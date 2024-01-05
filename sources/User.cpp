@@ -48,7 +48,7 @@ std::vector< Channel* >&	User::getRegularChannels() {
 	Channel*										channel;
 	for (; chanIt != _channels.end(); ++chanIt ) {
 		channel = chanIt->second;
-		if ( channel->isOperator( this ) == false )
+		if ( channel->isOperator( _nickname ) == false )
 			regularChannels.push_back( channel );
 	}
 	return ( regularChannels );
@@ -61,7 +61,7 @@ std::vector< Channel* >&	User::getOperatorChannels() {
 	Channel*										channel;
 	for (; chanIt != _channels.end(); ++chanIt ) {
 		channel = chanIt->second;
-		if ( channel->isOperator( this ) )
+		if ( channel->isOperator( _nickname ) )
 			operatorChannels.push_back( channel );
 	}
 	return ( operatorChannels );

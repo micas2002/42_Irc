@@ -40,20 +40,13 @@ const std::string&	Channel::getTopic() const { return ( _topic ); }
 
 std::map<std::string, User*>&	Channel::getUsers() { return ( _users ); }
 
-std::map<std::string, User*>&	Channel::getOperators() { return ( _operators ); }
+std::set<std::string>&	Channel::getOperators() { return ( _operators ); }
 
-std::map<std::string, User*>&	Channel::getInvites() { return ( _inviteList ); }
+std::set<std::string>&	Channel::getInvites() { return ( _inviteList ); }
 
 User*	Channel::getUser( const std::string& nickname ) {
 	std::map<std::string, User*>::iterator	it = _users.find( nickname );
 	if ( it != _users.end() )
-		return ( it->second );
-	return ( NULL );
-}
-
-User*	Channel::getOperator( const std::string& nickname ) {
-	std::map<std::string, User*>::iterator	it = _operators.find( nickname );
-	if ( it != _operators.end() )
 		return ( it->second );
 	return ( NULL );
 }
@@ -119,19 +112,19 @@ void	Channel::addUser( User* newUser ) {
 	_users.insert( std::pair<std::string, User*>( ( newUser->getNickname() ), newUser ) ); 
 }
 
-void	Channel::addOperator( User* newOperator ) { 
-	_operators.insert( std::pair<std::string, User*>( ( newOperator->getNickname() ), newOperator ) );
+void	Channel::addOperator( const std::string& newOperator ) { 
+	_operators.insert( newOperator );
 }
 
-void	Channel::addInvite( User* newInvite ) { 
-	_inviteList.insert( std::pair<std::string, User*>( ( newInvite->getNickname() ), newInvite ) ); 
+void	Channel::addInvite( const std::string& newInvite ) { 
+	_inviteList.insert( newInvite ); 
 }
 
-void	Channel::ejectUser( User* user ) { _users.erase( user->getNickname() ); }
+void	Channel::ejectUser( const std::string& user ) { _users.erase( user ); }
 
-void	Channel::ejectOperator( User* user ) { _operators.erase( user->getNickname() ); }
+void	Channel::ejectOperator( const std::string& user ) { _operators.erase( user ); }
 
-void	Channel::removeInvite( User* user ) { _inviteList.erase( user->getNickname() ); }
+void	Channel::removeInvite( const std::string& invite ) { _inviteList.erase( invite ); }
 
 void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) {
 	for ( std::map<std::string, User*>::iterator it = _users.begin(); it != _users.end(); it++ ) {
@@ -139,11 +132,4 @@ void	Channel::sendMessage( std::string serverMessage , std::string senderNick ) 
 			continue;
 		send( it->second->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
 	}
-}
-
-bool	Channel::isOperator( User* user ) {
-	std::map<std::string, User*>::iterator	it = _operators.find( user->getNickname() );
-	if ( it != _operators.end() )
-		return ( true );
-	return ( false );
 }

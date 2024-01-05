@@ -17,6 +17,7 @@
 #include <signal.h>
 #include <algorithm>
 #include <map>
+#include <set>
 
 #include "User.hpp"
 
@@ -41,10 +42,9 @@ class Channel {
 		const std::string&						getTopic() const;
 		std::string								getModes() const;
   		User*									getUser( const std::string& nickname );
-		User*									getOperator( const std::string& nickname );
 		std::map<std::string, User*>&			getUsers();
-		std::map<std::string, User*>&			getOperators();
-		std::map<std::string, User*>&			getInvites();
+		std::set<std::string>&					getOperators();
+		std::set<std::string>&					getInvites();
 		int										getUserLimit() const;
 		int										getUserCount() const;
 		bool									getInviteOnly() const;
@@ -60,13 +60,13 @@ class Channel {
 		void									setInviteOnly( bool inviteOnly );
 		void									setTopicRestriction( bool topicRestriction );
 		void									addUser( User* newUser );
-		void									addOperator( User* newOperator );
-		void									addInvite( User* newInvite );
+		void									addOperator( const std::string& newOperator );
+		void									addInvite( const std::string& newInvite );
 
 		//Removers
-		void									ejectUser( User* user);
-		void									ejectOperator(User* user);
-		void									removeInvite(User* invite);
+		void									ejectUser( const std::string& user);
+		void									ejectOperator( const std::string& user);
+		void									removeInvite( const std::string& invite);
 
 		//Functions
 		void									sendMessage( std::string serverMessage, std::string senderNick );
@@ -81,6 +81,6 @@ class Channel {
 		bool									_topicRestriction;
 
 		std::map<std::string, User*>			_users;
-		std::map<std::string, User*>			_operators;
-		std::map<std::string, User*>			_inviteList;
+		std::set<std::string>					_operators;
+		std::set<std::string>					_inviteList;
 };

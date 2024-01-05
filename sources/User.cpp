@@ -41,7 +41,7 @@ User&	User::operator=( const User& copy ) {
 
 std::map<std::string, Channel*>&	User::getAllChannels() { return ( _channels ); }
 
-std::vector< Channel* >	User::getRegularChannels() {
+std::vector< Channel* >&	User::getRegularChannels() {
 	std::vector< Channel* > regularChannels;
 
 	std::map<std::string, Channel*>::iterator		chanIt = _channels.begin();
@@ -54,7 +54,7 @@ std::vector< Channel* >	User::getRegularChannels() {
 	return ( regularChannels );
 }
 
-std::vector< Channel* >	User::getOperatorChannels() {
+std::vector< Channel* >&	User::getOperatorChannels() {
 	std::vector< Channel* > operatorChannels;
 
 	std::map<std::string, Channel*>::iterator		chanIt = _channels.begin();
@@ -111,7 +111,7 @@ void	User::removeChannel( const std::string& channelName ) {
 	}
 }
 
-std::string	User::getMessagePrefix() const {
+std::string&	User::getMessagePrefix() const {
 	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + _ip +" " );
 	return ( messagePrefix );
 }

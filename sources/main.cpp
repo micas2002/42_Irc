@@ -9,6 +9,7 @@ int	main( int argc, char** argv ) {
 		server.setServerPassword( argv[2] );
 		server.setServerPort( argv[1] );
 		server.createAndBindSocket();
+		server.serverLoop();
 	}
 	catch ( std::exception &e ) {
 		e.what();

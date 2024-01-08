@@ -78,24 +78,28 @@ bool	Channel::isOperator( const std::string& user ) const {
 }
 
 std::string	Channel::getModes() const {
-	std::string finalModes = "+";
-	std::string addOns = " ";
+	std::string			finalModes = "+";
+	std::string			addOns = "";
+	std::stringstream	ss;
 
 	if ( _inviteOnly )
 		finalModes += 'i';
-	else if ( _topicRestriction )
+	if ( _topicRestriction )
 		finalModes += 't';
-	else if ( _channelPassword.length() > 0 ) {
-		finalModes += 'k';
-		addOns += _channelPassword + " ";
-	}
-	else if ( _userLimit != -1 ) {
+	if ( _userLimit != -1 ) {
 		finalModes += 'l';
-		addOns += _userLimit;
+		ss << _userLimit;
+		ss >> addOns;
+	}
+	if ( _channelPassword.length() > 0 ) {
+		finalModes += 'k';
+		if ( addOns.length() > 0 )
+			addOns += " ";
+		addOns += _channelPassword;
 	}
 	if ( finalModes.length() == 1 )
 		return ( "" );
-	return ( finalModes + addOns );
+	return ( finalModes + " " + addOns );
 }
 
 void	Channel::setPassword( std::string password ) { _channelPassword = password; }

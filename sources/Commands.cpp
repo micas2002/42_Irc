@@ -489,6 +489,10 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 				break;
 
 			case MODE_K:
+				if ( it->find( '-' ) != std::string::npos ) {
+					modeKey( ch, *it, sender, "" );
+					break;
+				}
 				try {
 					argument = params.at( paramsCounter++ );
 					modeKey( ch, *it, sender, argument );
@@ -540,11 +544,8 @@ void	Server::modeTopic( Channel* ch, std::string flag, User* user ) {
 }
 
 void	Server::modeKey( Channel* ch, std::string flag, User* user, std::string newKey ) {
-	if ( flag.find( '+' ) != std::string::npos )
-		ch->setPassword( "" );
-	else
-		ch->setPassword( newKey );
-	modeMessage( user, ch->getName(), flag, "" );
+	ch->setPassword( newKey );
+	modeMessage( user, ch->getName(), flag, newKey );
 }
 
 void	Server::modeOperator( Channel *channel, std::string flag, User* sender, std::string receiver ) {

@@ -226,6 +226,10 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 			return ;
 		}
 
+		if ( recipient->isUser( sender->getNickname() ) == false ) {
+			ServerMessages::ERR_CANNOTSENDTOCHAN( userSocket, sender->getNickname(), recipient_name );
+			return ;
+		}
 		std::string	serverMessage( sender->getMessagePrefix() + "PRIVMSG " + recipient_name + " :" + message + "\r\n" );
 		recipient->sendMessage( serverMessage, sender->getNickname() );
 	}

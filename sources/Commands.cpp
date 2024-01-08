@@ -120,7 +120,7 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	if ( user->getNicknameStatus() == true && user->getUsernameStatus() == true ) {
 		user->setIsAuthenticatedTrue();
 	}
-	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
+	send( userSocket, "Server: Correct password!\n", 26, 0 );
 }
 
 // NICK command 
@@ -154,7 +154,7 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		}
 		user->setNicknameStatusTrue();
 
-		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
+		send( userSocket, "Server: Nickname added!\n", 24, 0 );
 		ServerMessages::NICK_MESSAGE( userSocket, user, parameters.at( 1 ), old_nick );
 	}
 	else
@@ -199,7 +199,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	if ( user->getNicknameStatus() == true && user->getPasswordStatus() == true ) {
 		user->setIsAuthenticatedTrue();
 	}
-	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
+	send( userSocket, "Server: Username added!\n", 24, 0 );
 }
 
 // MESSAGE command
@@ -226,6 +226,10 @@ void	Server::messageComand( int userSocket, std::string& command ) {
 			return ;
 		}
 
+		if ( recipient->isUser( sender->getNickname() ) == false ) {
+			ServerMessages::ERR_CANNOTSENDTOCHAN( userSocket, sender->getNickname(), recipient_name );
+			return ;
+		}
 		std::string	serverMessage( sender->getMessagePrefix() + "PRIVMSG " + recipient_name + " :" + message + "\r\n" );
 		recipient->sendMessage( serverMessage, sender->getNickname() );
 	}
@@ -660,7 +664,11 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 		return ;
 	}
 
-	std::string& topic = parameters.at( 2 );
+	std::string topic;
+	std::vector<std::string>::iterator	it = parameters.begin() + 2;
+	for (; it != parameters.end(); ++it ) {
+		topic += *it + " ";
+	}
 	topic.erase( 0, 1 );
 	channel->setTopic( topic );
 	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel->getName(), topic ); // RPL_TOPIC 332

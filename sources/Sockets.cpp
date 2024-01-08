@@ -46,7 +46,7 @@ void Server::createAndBindSocket() {
 	FD_SET( _serverSocket, &_master );
 	// keep track of the biggest file descriptor
 	_maxSocketFd = _serverSocket; // so far, it's this one
-	std::cout << SERVER_AWAITING_CONNECTIONS << std::endl;
+	std::cout << "Server: awaiting connections" << std::endl;
 }
 
 void Server::serverLoop() {

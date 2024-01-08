@@ -26,6 +26,13 @@ void	ServerMessages::ERR_NOSUCHCHANNEL( const int socketFd, const std::string& c
 	send( socketFd, message.c_str(), message.size(), 0 );
 }
 
+void	ServerMessages::ERR_CANNOTSENDTOCHAN( const int socketFd, const std::string& clientName, const std::string& channelName ) {
+	std::string	message( ":Tijolinhos 404 " + clientName + " " + channelName + " :Cannot send to channel\r\n" );
+	
+	send( socketFd, message.c_str(), message.size(), 0 );
+
+}
+
 // ERR_NOTEXTTOSEND 412
 void		ServerMessages::ERR_NOTEXTTOSEND( const int socketFd, const std::string& clientName ) {
 	std::string message ( ":Tijolinhos 412 " + clientName + " :No text to send\r\n");

@@ -342,6 +342,16 @@ void	Server::partCommand( int userSocket, std::string& command ) {
 
 	channel->ejectUser( user->getNickname() );
 	ServerMessages::PART_MESSAGE( userSocket, user,  channel );
+
+	if ( channel->getUserCount() == 0 ) {
+		user->getAllChannels().erase( channel->getName() );
+		_channels.erase( channel->getName() );
+		return;
+	}
+	if ( channel->getOperators().size() == 0 ) {
+		channel->addOperator( channel->getUsers().begin()->second->getNickname() );
+		return;
+	}
 }
 
 // QUIT command

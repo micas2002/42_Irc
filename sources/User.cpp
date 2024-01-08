@@ -7,7 +7,12 @@ User::User() :_nickname( "InitialNickname" ), _username( "" ) {
 	_isAuthenticated = false;
 }
 
-User::User(std::string username) :_nickname( username ), _username( "" ) {}
+User::User(std::string username) :_nickname( username ), _username( "" ) {
+	_passwordStatus = false;
+	_usernameStatus = false;
+	_nicknameStatus = false;
+	_isAuthenticated = false;
+}
 
 User::User( const User& copy ) {
 	_nickname = copy._nickname;

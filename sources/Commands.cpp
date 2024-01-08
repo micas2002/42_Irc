@@ -138,8 +138,8 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 
 	if ( findDuplicateNicknames( parameters.at( 1 ) ) == false ) {
 		User					updatedUser( *user );
-		std::vector< Channel* >& regularChannels = user->getRegularChannels();
-		std::vector< Channel* >& operatorChannels = user->getOperatorChannels();
+		std::vector< Channel* > regularChannels = user->getRegularChannels();
+		std::vector< Channel* > operatorChannels = user->getOperatorChannels();
 
 		removeUser( user );
 		updatedUser.setNickname( parameters.at( 1 ) );

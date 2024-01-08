@@ -24,8 +24,8 @@ class User
 
 		//Getters
 		std::map<std::string, Channel*>&	getAllChannels();
-		std::vector< Channel* >&			getRegularChannels();
-		std::vector< Channel* >&			getOperatorChannels();
+		std::vector< Channel* >				getRegularChannels();
+		std::vector< Channel* >				getOperatorChannels();
 		const std::string&					getNickname() const;
 		const std::string&					getUsername() const;
 		int									getSocketFd() const;
@@ -35,7 +35,7 @@ class User
 		bool								getNicknameStatus() const;
 		bool								getIsAuthenticated() const;
 
-		std::string&						getMessagePrefix() const;
+		std::string							getMessagePrefix() const;
 
 		// Setters
 		void								setNickname( const std::string& nickname );

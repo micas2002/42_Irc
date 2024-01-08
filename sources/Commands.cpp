@@ -659,7 +659,11 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 		return ;
 	}
 
-	std::string& topic = parameters.at( 2 );
+	std::string topic;
+	std::vector<std::string>::iterator	it = parameters.begin() + 2;
+	for (; it != parameters.end(); ++it ) {
+		topic += *it + " ";
+	}
 	topic.erase( 0, 1 );
 	channel->setTopic( topic );
 	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel->getName(), topic ); // RPL_TOPIC 332

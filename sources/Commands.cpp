@@ -120,7 +120,7 @@ void	Server::passCommand( int userSocket, std::string& command ) {
 	if ( user->getNicknameStatus() == true && user->getUsernameStatus() == true ) {
 		user->setIsAuthenticatedTrue();
 	}
-	send( userSocket, SERVER_CORRECT_PASSWORD, 26, 0 );
+	send( userSocket, "Server: Correct password!\n", 26, 0 );
 }
 
 // NICK command 
@@ -154,7 +154,7 @@ void	Server::nickCommand( int userSocket, std::string& command ) {
 		}
 		user->setNicknameStatusTrue();
 
-		send( userSocket, SERVER_NICKNAME_ADDED, 24, 0 );
+		send( userSocket, "Server: Nickname added!\n", 24, 0 );
 		ServerMessages::NICK_MESSAGE( userSocket, user, parameters.at( 1 ), old_nick );
 	}
 	else
@@ -199,7 +199,7 @@ void	Server::userCommand( int userSocket, std::string& command ) {
 	if ( user->getNicknameStatus() == true && user->getPasswordStatus() == true ) {
 		user->setIsAuthenticatedTrue();
 	}
-	send( userSocket, SERVER_USERNAME_ADDED, 24, 0 );
+	send( userSocket, "Server: Username added!\n", 24, 0 );
 }
 
 // MESSAGE command

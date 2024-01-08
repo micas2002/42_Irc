@@ -117,7 +117,7 @@ void	User::removeChannel( const std::string& channelName ) {
 }
 
 std::string	User::getMessagePrefix() const {
-	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + _ip +" " );
+	std::string	messagePrefix( ":" + _nickname + "!" + _username + "@" + _ip + " " );
 	return ( messagePrefix );
 }
 

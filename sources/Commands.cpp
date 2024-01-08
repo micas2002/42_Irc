@@ -573,6 +573,7 @@ void	Server::modeOperator( Channel *channel, std::string flag, User* sender, std
 	else
 		channel->ejectOperator( rec->getNickname() );
 	modeMessage( sender, channel->getName(), flag, receiver );
+	modeMessage( rec, channel->getName(), flag, receiver );
 }
 
 void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::string limit ) {

@@ -341,10 +341,11 @@ void	Server::partCommand( int userSocket, std::string& command ) {
 	}
 
 	channel->ejectUser( user->getNickname() );
+	user->getAllChannels().erase( channel->getName() );
+
 	ServerMessages::PART_MESSAGE( userSocket, user,  channel );
 
 	if ( channel->getUserCount() == 0 ) {
-		user->getAllChannels().erase( channel->getName() );
 		_channels.erase( channel->getName() );
 		return;
 	}
@@ -380,10 +381,9 @@ void	Server::quitCommand( int userSocket, std::string& command ) {
 
 	std::map<std::string, User>::iterator	it = _users.begin();
 	
-	for (; it != _users.end(); ++it) { // Sending messages to all users not working
-		std::cout <<  it->second.getSocketFd() << std::endl;
+	for (; it != _users.end(); ++it) // Sending messages to all users not working
 		send( it->second.getSocketFd(), message.c_str(), message.size(), 0 );
-	}
+
 	close( userSocket );	// close the fd!
 	FD_CLR( userSocket, &_master ) ; // remove fd from master set
 }
@@ -565,7 +565,7 @@ void	Server::modeKey( Channel* ch, std::string flag, User* user, std::string new
 void	Server::modeOperator( Channel *channel, std::string flag, User* sender, std::string receiver ) {
 	User*	rec = getUser( receiver );
 	if ( !rec ) {
-		ServerMessages::ERR_USERNOTINCHANNEL( sender->getSocketFd(), sender->getNickname(), rec->getNickname(), channel->getName() );
+		ServerMessages::ERR_USERNOTINCHANNEL( sender->getSocketFd(), sender->getNickname(), receiver, channel->getName() );
 		return ;
 	}
 	if ( flag.find( '+' ) != std::string::npos )
@@ -589,9 +589,11 @@ void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::s
 	modeMessage( sender, channel->getName(), flag, limit );
 }
 
-void	Server::modeMessage( User* user, const std::string& channel_name, const std::string& modes, const std::string& arguments ) {
-	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channel_name + " " + modes + " " + arguments + "\r\n" );
-	send( user->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
+void	Server::modeMessage( User* user, const std::string& channelName, const std::string& modes, const std::string& arguments ) {
+	Channel* channel = getChannel( channelName );
+	
+	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channelName + " " + modes + " " + arguments + "\r\n" );
+	channel->sendMessage( serverMessage, user->getNickname() );
 }
 
 // INVITE command

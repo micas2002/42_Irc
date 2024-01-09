@@ -72,7 +72,6 @@ class Channel {
 
 		//Functions
 		void									sendMessage( std::string serverMessage, std::string senderNick );
-		bool									isOperator( User* user );
 
 	private:
 		const std::string						_name;

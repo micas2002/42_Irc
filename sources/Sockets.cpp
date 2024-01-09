@@ -106,7 +106,7 @@ void Server::handleNewConnection() {
 }
 
 void Server::handleClientData( int clientSocket ) {
-	char buffer[256]; // buffer for client data. "" cleans buffer
+	char buffer[256] =  ""; // buffer for client data. "" cleans buffer
 	int numberOfBytes;
 
 	// handle data from a client

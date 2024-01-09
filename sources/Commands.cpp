@@ -298,7 +298,6 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 		return;
 	}
 
-	channel->ejectUser( target->getNickname() );
 	std::string comment = ":Because you stink ";
 	
 	if ( parameters.size() > 3 && parameters.at( 3 ).at( 0 ) == ':' ) {
@@ -308,6 +307,8 @@ void	Server::kickCommand( int userSocket, const std::string& command ) {
 	}
 	comment.erase(comment.end() - 1);
 	ServerMessages::KICK_MESSAGE( userSocket, user, target->getNickname(),  channel, comment );
+	channel->ejectUser( target->getNickname() );
+	channel->ejectOperator( target->getNickname() );
 }
 
 // PART command
@@ -341,6 +342,7 @@ void	Server::partCommand( int userSocket, std::string& command ) {
 	}
 
 	channel->ejectUser( user->getNickname() );
+	channel->ejectOperator( user->getNickname() );
 	user->getAllChannels().erase( channel->getName() );
 
 	ServerMessages::PART_MESSAGE( userSocket, user,  channel );
@@ -492,7 +494,7 @@ void	Server::modeChannel( User* sender, std::vector< std::string > params, Chann
 	for ( std::vector< std::string >::iterator it = modeChanges.begin(); it != modeChanges.end(); it++ ) {
 		
 		std::string tmp = *it;
-		switch ( tmp.at(1) )
+		switch ( tmp.at( 1 ) )
 		{
 			case MODE_I:
 				modeInvite( ch, *it, sender );
@@ -573,7 +575,6 @@ void	Server::modeOperator( Channel *channel, std::string flag, User* sender, std
 	else
 		channel->ejectOperator( rec->getNickname() );
 	modeMessage( sender, channel->getName(), flag, receiver );
-	modeMessage( rec, channel->getName(), flag, receiver );
 }
 
 void	Server::modeLimit( Channel *channel, std::string flag, User* sender, std::string limit ) {
@@ -593,6 +594,7 @@ void	Server::modeMessage( User* user, const std::string& channelName, const std:
 	Channel* channel = getChannel( channelName );
 	
 	std::string	serverMessage( user->getMessagePrefix() + "MODE " + channelName + " " + modes + " " + arguments + "\r\n" );
+	send( user->getSocketFd(), serverMessage.c_str(), serverMessage.size(), 0 );
 	channel->sendMessage( serverMessage, user->getNickname() );
 }
 
@@ -667,7 +669,7 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 			ServerMessages::RPL_NOTOPIC( userSocket, user->getNickname(), channel->getName() ); // RPL_NOTOPIC 331
 		}
 		else {
-			ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel->getName(), topic ); // RPL_TOPIC 332
+			ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel, topic ); // RPL_TOPIC 332
 		}
 		return ;
 	}
@@ -684,7 +686,7 @@ void	Server::topicCommand( int userSocket, std::string& command ) {
 	}
 	topic.erase( 0, 1 );
 	channel->setTopic( topic );
-	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel->getName(), topic ); // RPL_TOPIC 332
+	ServerMessages::RPL_TOPIC( userSocket, user->getNickname(), channel, topic ); // RPL_TOPIC 332
 }
 
 // NAMES command

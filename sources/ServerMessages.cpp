@@ -159,10 +159,11 @@ void	ServerMessages::RPL_NOTOPIC( int socketFd, const std::string& clientName, c
 }
 
 // RPL_TOPIC 332
-void	ServerMessages::RPL_TOPIC( int socketFd, const std::string& clientName, const std::string& channelName, const std::string& topic ) {
-	std::string	message( ":Tijolinhos 332 " + clientName + " " + channelName + " :" + topic + "\r\n" );
+void	ServerMessages::RPL_TOPIC( int socketFd, const std::string& clientName, Channel* channel, const std::string& topic ) {
+	std::string	message( ":Tijolinhos 332 " + clientName + " " + channel->getName() + " :" + topic + "\r\n" );
 	
 	send( socketFd, message.c_str(), message.size(), 0 );
+	channel->sendMessage( message, clientName );
 }
 
 // RPL_INVITING 341

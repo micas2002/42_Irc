@@ -64,7 +64,7 @@ void	Server::addUser( User user ) {
 	_usersBySocket.insert( std::pair<int, std::string>( user.getSocketFd(), user.getNickname() ) );
 }
 
-void	Server::addChannel( Channel& channel ) {
+void	Server::addChannel( Channel channel ) {
 	_channels.insert( std::pair<std::string, Channel>( channel.getName(), channel ) );
 }
 

@@ -54,7 +54,7 @@ class ServerMessages {
 		// RPL_NOTOPIC 331
 		static void		RPL_NOTOPIC( int socketFd, const std::string& clientName, const std::string& channelName );
 		// RPL_TOPIC 332
-		static void		RPL_TOPIC( int socketFd, const std::string& clientName, const std::string& channelName, const std::string& topic );
+		static void		RPL_TOPIC( int socketFd, const std::string& clientName, Channel* channel, const std::string& topic );
 		// RPL_INVITING 341
 		static void		RPL_INVITING( int socketFd, const std::string& clientName, const std::string& nick, const std::string& channelName );
 		// RPL_WHOREPLY 352

@@ -79,7 +79,7 @@ class Server
 		void							setServerPort( const std::string& port );
 
 		void							addUser( User user );
-		void							addChannel( Channel& channel );
+		void							addChannel( Channel channel );
 
 		// Removers	
 		void							removeUser( User* user );

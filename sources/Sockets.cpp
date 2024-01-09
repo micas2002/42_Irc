@@ -104,7 +104,7 @@ void Server::handleNewConnection() {
 }
 
 void Server::handleClientData( int clientSocket ) {
-	char buffer[256] = ""; // buffer for client data. "" cleans buffer
+	char buffer[256]; // buffer for client data. "" cleans buffer
 	int numberOfBytes;
 
 	// handle data from a client
@@ -117,7 +117,7 @@ void Server::handleClientData( int clientSocket ) {
 		FD_CLR( clientSocket, &_master ) ; // remove fd from master set
 		return;
 	}
-	_commandInput[clientSocket] += buffer;
+	_commandInput[clientSocket].append( buffer );
 	if ( strchr( buffer, '\n' ) == NULL )
 		return;
 
@@ -134,5 +134,5 @@ void Server::handleClientData( int clientSocket ) {
 			it->erase( it->find( '\r' ) );
 		selectCommand( clientSocket, *it );
 	}
-	_commandInput[clientSocket] = "";
+	_commandInput.erase( clientSocket );
 }

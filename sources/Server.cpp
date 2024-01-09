@@ -58,7 +58,7 @@ void	Server::setServerPassword( const std::string& password) { _serverPassword =
 
 void	Server::setServerPort( const std::string& port ) { _serverPort = port; }
 
-void	Server::addUser( User user ) {
+void	Server::addUser( User& user ) {
 	_users.insert( std::pair<std::string, User>( user.getNickname(), user ) );
 
 	_usersBySocket.insert( std::pair<int, std::string>( user.getSocketFd(), user.getNickname() ) );

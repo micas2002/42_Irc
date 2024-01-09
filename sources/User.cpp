@@ -7,7 +7,7 @@ User::User() :_nickname( "InitialNickname" ), _username( "" ) {
 	_isAuthenticated = false;
 }
 
-User::User(std::string username) :_nickname( username ), _username( "" ) {
+User::User( std::string username ) :_nickname( username ), _username( "" ) {
 	_passwordStatus = false;
 	_usernameStatus = false;
 	_nicknameStatus = false;
@@ -95,7 +95,7 @@ void	User::setUsername( const std::string& username ) { _username = username; }
 
 void	User::setSocketFd( const int socketFd ) { _socketFd = socketFd; }
 
-void	User::setIp( const std::string ip ) { _ip = ip; }
+void	User::setIp( const std::string& ip ) { _ip = ip; }
 
 void	User::setPasswordStatusTrue() { _passwordStatus = true; }
 

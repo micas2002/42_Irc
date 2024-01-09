@@ -41,7 +41,7 @@ class User
 		void								setNickname( const std::string& nickname );
 		void								setUsername( const std::string& username );
 		void								setSocketFd( const int socketFd );
-		void								setIp( const std::string ip );
+		void								setIp( const std::string& ip );
 		void								setPasswordStatusTrue();
 		void								setUsernameStatusTrue();
 		void								setNicknameStatusTrue();

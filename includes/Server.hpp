@@ -19,6 +19,7 @@
 #include <signal.h>
 #include <algorithm>
 #include <sstream>
+#include <cerrno>
 
 #include <map>
 #include <vector>

@@ -54,6 +54,8 @@ void Server::serverLoop() {
 		signal( SIGINT, closeServer ); // catch ctrl-c
 		_readFds = _master; // copy read_fds into master
 		if ( select( _maxSocketFd + 1, &_readFds, NULL, NULL, NULL ) == -1 ) {
+			if ( errno == EINTR )
+				continue;
 			perror( "select" );
 			exit( 4 );
 		}

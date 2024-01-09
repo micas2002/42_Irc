@@ -12,7 +12,7 @@ OBJECTS_LIST = $(patsubst %.cpp, %.o, $(SOURCES_LIST))
 OBJECTS_DIRECTORY = objects/
 OBJECTS = $(addprefix $(OBJECTS_DIRECTORY), $(OBJECTS_LIST))
 
-CC = g++
+CC = c++
 FLAGS = -Wall -Werror -Wextra -Wshadow -std=c++98 -g
 
 INCLUDES = -I $(HEADERS_DIRECTORY)
